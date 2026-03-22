@@ -12,7 +12,6 @@ Semua konfigurasi Docker dipusatkan di folder `docker/`:
 - `docker/web/`: Dockerfile & Nginx untuk React Frontend.
 - `docker/notification-service/`: Dockerfile untuk Node.js (WhatsApp).
 - `docker/docker-compose.yml`: Orkestrator seluruh layanan.
-- **Database**: Diasumsikan sudah terinstal di host (MySQL).
 
 ---
 
@@ -36,10 +35,10 @@ cd docker
 docker compose up -d --build
 ```
 
-### 3. Inisialisasi Database (Jika Diperlukan)
-Pastikan database `setya_abadi_elektronik` sudah dibuat di MySQL host Anda. Lalu jalankan migrasi:
+### 3. Inisialisasi Database (Hanya Sekali)
+Setelah kontainer berjalan, jalankan migrasi database Laravel:
 ```bash
-podman exec -it setya-api php artisan migrate --seed
+docker exec -it setya-api php artisan migrate:fresh --seed
 ```
 
 ---
@@ -54,26 +53,9 @@ File upload (API) dan session WhatsApp (Baileys) akan disimpan secara otomatis d
 - Path `/api`: Menyimpan file order/bukti bayar.
 - Path `/baileys`: Menyimpan session login WhatsApp.
 
----
-
-## 🐋 Khusus Pengguna Podman
-Jika Anda menggunakan **Podman** alih-alih Docker:
-1. Instal `podman-compose`:
-   - Ubuntu/Debian: `sudo apt install podman-compose`
-   - CentOS/RHEL: `sudo dnf install podman-compose`
-2. Jalankan perintah dengan `podman-compose`:
-   ```bash
-   podman-compose up -d --build
-   ```
-3. Jika mendapat error "looking up compose provider", pastikan `podman-compose` ada di PATH atau gunakan `podman compose` setelah menginstal providernya.
-
----
-
 ## 🛠 Troubleshooting
 - **Permission Issue (Linux)**: Jika folder storage tidak bisa ditulisi, jalankan `sudo chown -R 777` pada folder di host.
 - **Port Conflict**: Jika port sudah terpakai, ubah mapping port di `docker-compose.yml`.
-- **Error "git not found" during build**: Pastikan Dockerfile di `web` dan `notification-service` sudah menyertakan `apk add git`.
-- **Error "file context not found"**: Pastikan struktur folder `apps/` lengkap. Jika folder `apps/web/package.json` hilang, proses build akan gagal.
 
 ---
 *Created by Antigravity*

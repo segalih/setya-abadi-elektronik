@@ -11,8 +11,7 @@
             ],
             "outputs": [
                 "dist/**",
-                ".next/**",
-                "public/build/**"
+                ".next/**"
             ]
         },
         "lint": {

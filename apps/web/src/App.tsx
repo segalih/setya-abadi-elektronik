@@ -1,31 +1,81 @@
-import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import LandingPage from '@/modules/landing/LandingPage';
+import LoginPage from '@/modules/auth/LoginPage';
+import RegisterPage from '@/modules/auth/RegisterPage';
+import DashboardPage from '@/modules/dashboard/DashboardPage';
+import OrderCreatePage from '@/modules/dashboard/OrderCreatePage';
+import OrderDetailPage from '@/modules/dashboard/OrderDetailPage';
+import BackofficeLayout from '@/layouts/BackofficeLayout';
+import BackofficeDashboard from '@/modules/dashboard/BackofficeDashboard';
+import BackofficeOrders from '@/modules/dashboard/BackofficeOrders';
+import BackofficeCustomers from '@/modules/dashboard/BackofficeCustomers';
+import BackofficeParameters from '@/modules/dashboard/BackofficeParameters';
+import BackofficeUsers from '@/modules/dashboard/BackofficeUsers';
+import BackofficeAudit from '@/modules/dashboard/BackofficeAudit';
+import ProtectedRoute from '@/routes/ProtectedRoute';
+import { Toaster } from '@/components/ui/use-toast';
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4 text-center">
-      <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-        Setya Abadi Elektronik
-      </h1>
-      <p className="text-slate-400 max-w-md">
-        Source code frontend terdeteksi hilang. Kontainer ini berjalan menggunakan boilerplate sementara. 
-        Silakan kembalikan file source asli Anda ke folder <code className="bg-slate-800 px-1 rounded text-emerald-400">apps/web/src</code>.
-      </p>
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur">
-          <h3 className="font-semibold text-blue-400">API Status</h3>
-          <p className="text-sm text-slate-500">Connected to Laravel</p>
-        </div>
-        <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur">
-          <h3 className="font-semibold text-emerald-400">Database</h3>
-          <p className="text-sm text-slate-500">External Host</p>
-        </div>
-        <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur">
-          <h3 className="font-semibold text-purple-400">WA Service</h3>
-          <p className="text-sm text-slate-500">Notification Active</p>
-        </div>
-      </div>
-    </div>
-  )
+    <Router>
+      <AnimatePresence mode="wait">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Protected Routes */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/order/create" 
+            element={
+              <ProtectedRoute>
+                <OrderCreatePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/order/:id" 
+            element={
+              <ProtectedRoute>
+                <OrderDetailPage />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Backoffice Routes */}
+          <Route 
+            path="/backoffice" 
+            element={
+              <ProtectedRoute>
+                <BackofficeLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<BackofficeDashboard />} />
+            <Route path="orders" element={<BackofficeOrders />} />
+            <Route path="customers" element={<BackofficeCustomers />} />
+            <Route path="audit" element={<BackofficeAudit />} />
+            <Route path="parameters" element={<BackofficeParameters />} />
+            <Route path="users" element={<BackofficeUsers />} />
+          </Route>
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+      <Toaster />
+    </Router>
+  );
 }
 
-export default App
+export default App;

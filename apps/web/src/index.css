@@ -1,21 +1,49 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: oklch(0.6 0.15 250);
-  --color-brand-secondary: oklch(0.7 0.15 160);
+  --color-primary: #7ED9A3;
+  --color-primary-foreground: #064E3B;
+  --color-secondary: #56CFE1;
+  --color-secondary-foreground: #083344;
+  --color-accent: #A5D8FF;
+  --color-background: #F8FAFC;
+  --color-foreground: #1E293B;
+  --color-muted: #F1F5F9;
+  --color-muted-foreground: #64748B;
+  --color-border: #E5E7EB;
+  
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
 }
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: dark;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/20;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm;
+  }
+  
+  .pcb-grid {
+    background-image: 
+      radial-gradient(circle at 1px 1px, var(--color-border) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.02); }
+  }
 }

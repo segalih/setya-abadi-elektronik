@@ -2,14 +2,14 @@ FROM node:20-alpine as build
 
 WORKDIR /app
 
-# Install git and pnpm
-RUN apk add --no-cache git && npm install -g pnpm
+# Install pnpm
+RUN npm install -g pnpm
 
 # Copy package files (monorepo root and workspace packages)
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
 
-# Install dependencies (ignoring scripts to avoid postinstall issues with missing files)
+# Install dependencies
 RUN pnpm install --filter web...
 
 # Copy source
