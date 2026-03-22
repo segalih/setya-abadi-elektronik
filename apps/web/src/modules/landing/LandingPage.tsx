@@ -46,7 +46,7 @@ export default function LandingPage() {
               >
                 PROSES CEPAT • HASIL RAPI • HARGA BERSAHABAT
               </motion.div>
-              <h1 className="text-4xl md:text-7xl font-black text-foreground mb-6 leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-foreground mb-6 leading-tight">
                 Jasa Cetak PCB <br />
                 <span className="text-primary italic">Cepat & Rapi</span>
               </h1>
@@ -221,14 +221,14 @@ export default function LandingPage() {
           </section>
 
           {/* CTA Section */}
-          <section className="p-12 md:p-24">
+          <section className="p-4 sm:p-12 lg:p-24">
              <motion.div 
                {...revealUp}
                className="max-w-6xl mx-auto rounded-[3rem] bg-gradient-to-br from-primary to-secondary p-12 text-center text-white shadow-2xl shadow-primary/30 relative overflow-hidden"
              >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
                 <div className="relative z-10">
-                   <h2 className="text-3xl md:text-5xl font-black mb-6">Siap Mewujudkan <br />Inovasi Hardware Anda?</h2>
+                   <h2 className="text-3xl lg:text-5xl font-black mb-6">Siap Mewujudkan <br />Inovasi Hardware Anda?</h2>
                    <p className="text-primary-foreground/90 mb-10 max-w-xl mx-auto font-medium">Buka akun sekarang dan nikmati kemudahan tracking produksi PCB Anda secara transparan.</p>
                    <Link to="/register">
                     <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-slate-50 animate-pulse-soft px-12">

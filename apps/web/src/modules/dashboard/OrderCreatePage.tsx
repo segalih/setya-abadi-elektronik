@@ -104,7 +104,7 @@ export default function OrderCreatePage() {
       <div className="min-h-screen bg-slate-50 py-12 px-6 pcb-grid relative overflow-hidden">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header & Steps */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
               <h1 className="text-3xl font-black">Konfigurasi PCB</h1>
               <p className="text-muted-foreground font-medium">Lengkapi spesifikasi board Anda untuk mendapatkan estimasi harga.</p>
@@ -124,8 +124,8 @@ export default function OrderCreatePage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 items-start">
-             <div className="md:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+             <div className="lg:col-span-2">
                 <AnimatePresence mode="wait">
                   {step === 1 && (
                     <motion.div 
@@ -331,7 +331,7 @@ export default function OrderCreatePage() {
              </div>
 
              {/* Pricing Sidebar */}
-             <div className="sticky top-24">
+             <div className="lg:sticky top-24">
                 <Card className="border-none bg-primary text-white overflow-hidden shadow-2xl shadow-primary/30">
                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16" />
                    <CardHeader className="relative z-10">

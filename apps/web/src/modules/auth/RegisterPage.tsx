@@ -15,6 +15,7 @@ export default function RegisterPage() {
     name: '',
     email: '',
     password: '',
+    password_confirmation: '',
     phone: '',
     full_address: '',
     province: '',
@@ -46,7 +47,7 @@ export default function RegisterPage() {
 
   return (
     <MotionPage>
-      <div className="min-h-screen py-12 flex items-center justify-center p-6 bg-slate-50 pcb-grid relative overflow-hidden">
+      <div className="min-h-screen py-8 sm:py-12 flex items-center justify-center p-4 sm:p-6 bg-slate-50 pcb-grid relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -z-10" />
         
         <div className="w-full max-w-3xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
@@ -102,6 +103,16 @@ export default function RegisterPage() {
                          required 
                          value={formData.password}
                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Konfirmasi Password</label>
+                       <Input 
+                         type="password" 
+                         placeholder="Ulangi password" 
+                         required 
+                         value={formData.password_confirmation}
+                         onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
                        />
                      </div>
                      <div className="space-y-2">

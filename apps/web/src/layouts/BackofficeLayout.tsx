@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
+import NotFoundPage from '@/modules/error/NotFoundPage';
 
 export default function BackofficeLayout() {
   const { user, logout } = useAuthStore();
@@ -26,31 +27,39 @@ export default function BackofficeLayout() {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  // Fallback for corrupted localstorage where user is nested
+  const actualUser = (user as any)?.user || user;
+  const roleName = typeof actualUser?.role === 'string' ? actualUser.role : actualUser?.role?.name;
+
+  if (roleName === 'user' || roleName === 'customer' || !['admin', 'staff', 'supervisor'].includes(roleName || '')) {
+    return <NotFoundPage />;
+  }
+
   const menuItems = [
-    { title: 'Dashboard', icon: LayoutDashboard, path: '/backoffice', roles: ['staff', 'supervisor'] },
-    { title: 'Total Pesanan', icon: Package, path: '/backoffice/orders', roles: ['staff', 'supervisor'] },
-    { title: 'Pelanggan', icon: Users, path: '/backoffice/customers', roles: ['staff', 'supervisor'] },
-    { title: 'Audit Trail', icon: FileSearch, path: '/backoffice/audit', roles: ['staff', 'supervisor'] },
-    { title: 'Parameters', icon: Settings, path: '/backoffice/parameters', roles: ['supervisor'] },
-    { title: 'User Management', icon: UserIcon, path: '/backoffice/users', roles: ['supervisor'] },
+    { title: 'Dashboard', icon: LayoutDashboard, path: '/backoffice', roles: ['admin', 'staff', 'supervisor'] },
+    { title: 'Total Pesanan', icon: Package, path: '/backoffice/orders', roles: ['admin', 'staff', 'supervisor'] },
+    { title: 'Pelanggan', icon: Users, path: '/backoffice/customers', roles: ['admin', 'staff', 'supervisor'] },
+    { title: 'Audit Trail', icon: FileSearch, path: '/backoffice/audit', roles: ['admin', 'staff', 'supervisor'] },
+    { title: 'Parameters', icon: Settings, path: '/backoffice/parameters', roles: ['admin', 'supervisor'] },
+    { title: 'User Management', icon: UserIcon, path: '/backoffice/users', roles: ['admin', 'supervisor'] },
   ];
 
-  const filteredMenu = menuItems.filter(item => item.roles.includes(user?.role.name || ''));
+  const filteredMenu = menuItems.filter(item => item.roles.includes(roleName || ''));
 
   return (
     <div className="min-h-screen bg-slate-50 flex overflow-hidden">
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-in fade-in"
           onClick={() => setIsSidebarOpen(false)} 
         />
       )}
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 md:relative glass border-r h-screen flex flex-col p-6 transition-transform duration-300 md:translate-x-0",
-        isSidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full md:w-20 md:translate-x-0"
+        "fixed inset-y-0 left-0 z-50 lg:relative glass border-r h-screen flex flex-col p-6 transition-transform duration-300 lg:translate-x-0",
+        isSidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:w-20 lg:translate-x-0"
       )}>
         <div className="flex items-center gap-3 mb-10 overflow-hidden">
           <div className="p-2 rounded-xl bg-primary flex-shrink-0">
@@ -85,11 +94,11 @@ export default function BackofficeLayout() {
            {isSidebarOpen && (
              <div className="flex items-center gap-3 mb-6 p-2 rounded-xl bg-slate-100/50 animate-in fade-in zoom-in-95">
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold flex-shrink-0">
-                   {user?.name.charAt(0)}
+                   {actualUser?.name?.charAt(0) || 'U'}
                 </div>
                 <div className="min-w-0">
-                   <div className="text-xs font-black truncate">{user?.name}</div>
-                   <div className="text-[10px] text-muted-foreground uppercase">{user?.role.name}</div>
+                   <div className="text-xs font-black truncate">{actualUser?.name || 'User'}</div>
+                   <div className="text-[10px] text-muted-foreground uppercase">{roleName || 'User'}</div>
                 </div>
              </div>
            )}
@@ -112,12 +121,12 @@ export default function BackofficeLayout() {
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 glass border-b sticky top-0 z-40 flex items-center px-6 justify-between">
-           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(true)}>
+      <div className="flex-1 flex flex-col min-w-0 h-screen">
+        <header className="h-16 glass border-b sticky top-0 z-40 flex items-center px-4 sm:px-6 justify-between">
+           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="w-5 h-5" />
            </Button>
-           <Button variant="ghost" size="icon" className="hidden md:flex" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+           <Button variant="ghost" size="icon" className="hidden lg:flex" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
            </Button>
            
@@ -136,7 +145,7 @@ export default function BackofficeLayout() {
            </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6 md:p-10 pcb-grid">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 pcb-grid">
            <Outlet />
         </main>
       </div>

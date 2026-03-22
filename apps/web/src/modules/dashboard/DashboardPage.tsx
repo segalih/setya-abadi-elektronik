@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Cpu, LogOut, LayoutDashboard, Package, Bell, User as UserIcon, Loader2, Info, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,8 +17,17 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // Fallback for corrupted localstorage where user is nested
+  const actualUser = (user as any)?.user || user;
+  const roleName = typeof actualUser?.role === 'string' ? actualUser.role : actualUser?.role?.name;
 
   useEffect(() => {
+    if (roleName && ['admin', 'supervisor', 'staff'].includes(roleName)) {
+      navigate('/backoffice', { replace: true });
+    }
+
     const fetchData = async () => {
       try {
         const [ordersResp] = await Promise.all([
@@ -46,15 +56,15 @@ export default function DashboardPage() {
         {/* Mobile Overlay */}
         {isMobileMenuOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in"
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-in fade-in"
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
 
         {/* Sidebar */}
         <aside className={cn(
-          "fixed inset-y-0 left-0 z-50 md:relative glass border-r h-screen w-64 flex flex-col p-6 transition-transform duration-300 md:translate-x-0",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 lg:relative glass border-r h-screen w-64 flex flex-col p-6 transition-transform duration-300 lg:translate-x-0",
+          isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         )}>
           <div className="flex items-center gap-2 mb-10">
             <div className="p-1.5 rounded-lg bg-primary">
@@ -77,11 +87,11 @@ export default function DashboardPage() {
           <div className="mt-10 pt-6 border-t border-slate-200">
             <div className="flex items-center gap-3 mb-6 p-2 rounded-xl bg-slate-100/50">
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                {user?.name?.charAt(0) || 'U'}
+                {actualUser?.name?.charAt(0) || 'U'}
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-black truncate">{user?.name || 'User'}</div>
-                <div className="text-[10px] text-muted-foreground uppercase">{user?.role?.name || 'User'}</div>
+                <div className="text-xs font-black truncate">{actualUser?.name || 'User'}</div>
+                <div className="text-[10px] text-muted-foreground uppercase">{roleName || 'User'}</div>
               </div>
             </div>
             <Button onClick={logout} variant="ghost" className="w-full justify-start gap-3 text-red-500 hover:bg-red-50 hover:text-red-600 h-12 rounded-xl">
@@ -93,13 +103,13 @@ export default function DashboardPage() {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 h-screen">
-          <header className="flex justify-between items-center p-6 md:px-12 md:pt-12 md:pb-6 bg-slate-50 sticky top-0 z-30">
+          <header className="flex justify-between items-center p-4 sm:p-6 lg:px-10 lg:pt-10 lg:pb-6 bg-slate-50 sticky top-0 z-30">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
+              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setIsMobileMenuOpen(true)}>
                 <Menu className="w-6 h-6 text-slate-700" />
               </Button>
               <div>
-                <h1 className="text-xl md:text-2xl font-black">Halo, {user?.name?.split(' ')[0] || 'User'} 👋</h1>
+                <h1 className="text-xl md:text-2xl font-black">Halo, {actualUser?.name?.split(' ')[0] || 'User'} 👋</h1>
                 <p className="hidden md:block text-sm text-muted-foreground font-medium">Selamat datang di panel kontrol pesanan Anda.</p>
               </div>
             </div>
@@ -118,15 +128,15 @@ export default function DashboardPage() {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-6 md:p-12">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="md:col-span-2 border-slate-100 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between border-b bg-slate-50/30">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+              <Card className="lg:col-span-2 border-slate-100 shadow-sm">
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b bg-slate-50/30 gap-4">
                   <div>
                     <CardTitle className="text-lg">Pesanan Terakhir</CardTitle>
                     <CardDescription>Status produksi PCB Anda saat ini.</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="h-9 font-bold bg-white">Lihat Semua</Button>
+                  <Button variant="outline" size="sm" className="h-9 font-bold bg-white shrink-0">Lihat Semua</Button>
                 </CardHeader>
                 <CardContent className="p-0">
                   {isLoading ? (

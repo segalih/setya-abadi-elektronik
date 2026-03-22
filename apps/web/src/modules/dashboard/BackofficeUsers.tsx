@@ -121,8 +121,8 @@ export default function BackofficeUsers() {
             {isLoading ? (
                <div className="p-24 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : users.length > 0 ? (
-               <div className="overflow-x-auto">
-                  <table className="w-full text-left">
+               <div className="overflow-x-auto pb-4">
+                  <table className="w-full text-left whitespace-nowrap">
                      <thead>
                         <tr className="bg-slate-50/50 border-b text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                            <th className="p-6">User / Staff</th>

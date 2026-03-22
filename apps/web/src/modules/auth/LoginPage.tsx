@@ -34,9 +34,15 @@ export default function LoginPage() {
         });
         
         // 4. Store user data globally and redirect
-        setAuth(userRes.data.data || userRes.data, data.token);
+        const userData = userRes.data?.user || userRes.data?.data || userRes.data;
+        setAuth(userData, data.token);
         queryClient.invalidateQueries({ queryKey: ['me'] }); // cache invalidation
-        navigate('/dashboard');
+        
+        if (userData?.role?.name === 'admin' || userData?.role?.name === 'supervisor' || userData?.role?.name === 'staff') {
+          navigate('/backoffice');
+        } else {
+          navigate('/dashboard');
+        }
       } catch (err) {
         setErrorMsg('Gagal memuat data profil. Silakan coba login kembali.');
         localStorage.removeItem('token');
@@ -55,7 +61,7 @@ export default function LoginPage() {
 
   return (
     <MotionPage>
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 pcb-grid relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50 pcb-grid relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg aspect-square bg-primary/5 rounded-full blur-[100px] -z-10" />
         
         <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">

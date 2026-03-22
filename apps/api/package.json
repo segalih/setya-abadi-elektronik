@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "concurrently -n \"API,JOB,VITE\" -c \"cyan,green,magenta\" \"php artisan serve --port=8000\" \"php artisan queue:listen\" \"vite\"",
+        "dev": "concurrently -n \"API,JOB\" -c \"cyan,green\" \"php artisan serve --port=8000\" \"php artisan queue:listen\"",
         "serve": "php artisan serve",
         "queue": "php artisan queue:listen"
     },

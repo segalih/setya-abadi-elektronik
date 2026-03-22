@@ -2,10 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AnimatePresence } from 'framer-motion';
 import LandingPage from '@/modules/landing/LandingPage';
 import LoginPage from '@/modules/auth/LoginPage';
-import RegisterPage from '@/modules/auth/RegisterPage';
 import DashboardPage from '@/modules/dashboard/DashboardPage';
 import OrderCreatePage from '@/modules/dashboard/OrderCreatePage';
-import OrderDetailPage from '@/modules/dashboard/OrderDetailPage';
 import BackofficeLayout from '@/layouts/BackofficeLayout';
 import BackofficeDashboard from '@/modules/dashboard/BackofficeDashboard';
 import BackofficeOrders from '@/modules/dashboard/BackofficeOrders';
@@ -15,6 +13,9 @@ import BackofficeUsers from '@/modules/dashboard/BackofficeUsers';
 import BackofficeAudit from '@/modules/dashboard/BackofficeAudit';
 import ProtectedRoute from '@/routes/ProtectedRoute';
 import { Toaster } from '@/components/ui/use-toast';
+import RegisterPage from './modules/auth/RegisterPage';
+import OrderDetailPage from './modules/dashboard/OrderDetailPage';
+import NotFoundPage from '@/modules/error/NotFoundPage';
 
 function App() {
   return (
@@ -70,7 +71,7 @@ function App() {
           </Route>
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AnimatePresence>
       <Toaster />

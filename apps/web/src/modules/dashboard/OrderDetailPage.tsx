@@ -120,8 +120,8 @@ export default function OrderDetailPage() {
              </CardContent>
            </Card>
 
-           <div className="grid md:grid-cols-3 gap-8">
-              <div className="md:col-span-2 space-y-8">
+           <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+              <div className="lg:col-span-2 space-y-8">
                  <div className="grid sm:grid-cols-2 gap-6">
                     <Card className="border-none shadow-sm">
                        <CardHeader className="bg-slate-100/30 border-b">

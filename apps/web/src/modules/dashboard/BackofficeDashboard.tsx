@@ -191,7 +191,7 @@ export default function BackofficeDashboard() {
       </div>
 
       {/* Quick Access Area */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
          <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-primary/10 to-transparent border border-white shadow-inner flex items-center gap-6 group hover:translate-y-[-4px] transition-all duration-300">
             <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                <ShieldCheck className="w-7 h-7" />
