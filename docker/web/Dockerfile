@@ -1,8 +1,26 @@
+FROM node:20-alpine as build
+
+WORKDIR /app
+
+# Install git and pnpm
+RUN apk add --no-cache git && npm install -g pnpm
+
+# Copy package files (monorepo root and workspace packages)
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+
+# Install dependencies (ignoring scripts to avoid postinstall issues with missing files)
+RUN pnpm install --filter web...
+
+# Copy source
+COPY . .
+
+# Build
+RUN pnpm run build --filter web
+
+# Production stage
 FROM nginx:stable-alpine
-
-# Copy the pre-built dist folder from the host (since source is missing)
-COPY ./apps/web/dist /usr/share/nginx/html
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 COPY ./docker/web/nginx.conf /etc/nginx/conf.d/default.conf
-
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

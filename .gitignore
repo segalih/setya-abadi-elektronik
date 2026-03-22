@@ -1,6 +1,7 @@
 node_modules
 .turbo
 dist
+!apps/web/dist
 .env
 .env.local
 apps/notification-service/auth_info_baileys/*
