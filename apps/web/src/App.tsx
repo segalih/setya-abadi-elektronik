@@ -15,6 +15,7 @@ import ProtectedRoute from '@/routes/ProtectedRoute';
 import { Toaster } from '@/components/ui/use-toast';
 import RegisterPage from './modules/auth/RegisterPage';
 import OrderDetailPage from './modules/dashboard/OrderDetailPage';
+import ProfilePage from '@/modules/profile/ProfilePage';
 import NotFoundPage from '@/modules/error/NotFoundPage';
 
 function App() {
@@ -49,6 +50,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <OrderDetailPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             } 
           />

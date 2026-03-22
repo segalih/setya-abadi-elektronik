@@ -68,7 +68,7 @@ export function FileUpload({
     <div className={cn("space-y-3", className)}>
       <div
         className={cn(
-          "relative flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-2xl transition-all cursor-pointer group",
+          "relative flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-md transition-none cursor-pointer group",
           isDragging
             ? "border-primary bg-primary/5 shadow-sm"
             : value
@@ -109,7 +109,7 @@ export function FileUpload({
           </div>
         ) : (
           <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+            <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110  ">
               <UploadCloud className={cn("w-8 h-8", error ? "text-red-500" : "text-primary")} />
             </div>
             <h4 className="font-bold text-slate-800 mb-1">Tarik & Lepas File di Sini</h4>

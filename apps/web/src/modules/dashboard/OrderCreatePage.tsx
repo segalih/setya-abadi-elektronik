@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, Layers, Upload, Info, ChevronRight, ChevronLeft, Loader2, AlertTriangle, FileText, PenTool, Wrench, MapPin, CheckCircle2 } from 'lucide-react';
+import { Cpu, Layers, Upload, Info, ChevronRight, ChevronLeft, Loader2, AlertTriangle, FileText, PenTool, Wrench, MapPin, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -41,6 +41,11 @@ export default function OrderCreatePage() {
     // Shared
     notes: '',
     file: null as File | null
+  });
+
+  const [useCustomAddress, setUseCustomAddress] = useState(false);
+  const [customAddress, setCustomAddress] = useState({
+    full_address: '', province: '', city: '', district: '', village: '', postal_code: '', phone: ''
   });
 
   useEffect(() => {
@@ -119,6 +124,20 @@ export default function OrderCreatePage() {
       formData.append('file', form.file);
     }
 
+    if (useCustomAddress) {
+      if (!customAddress.full_address || !customAddress.province || !customAddress.city || !customAddress.phone) {
+        alert('Demi kelancaran, silakan lengkapi Alamat Kustom (Minimal: Alamat Lengkap, Provinsi, Kota, dan No HP).');
+        return;
+      }
+      formData.append('shipping_address[full_address]', customAddress.full_address);
+      formData.append('shipping_address[province]', customAddress.province);
+      formData.append('shipping_address[city]', customAddress.city);
+      formData.append('shipping_address[district]', customAddress.district);
+      formData.append('shipping_address[village]', customAddress.village);
+      formData.append('shipping_address[postal_code]', customAddress.postal_code);
+      formData.append('shipping_address[phone]', customAddress.phone);
+    }
+
     submitOrder(formData);
   };
 
@@ -126,6 +145,9 @@ export default function OrderCreatePage() {
     <MotionPage>
       <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 pcb-grid relative overflow-hidden">
         <div className="max-w-5xl mx-auto space-y-8">
+          <Button variant="outline" onClick={() => navigate(-1)} className="bg-white flex items-center gap-2 w-fit">
+            <ArrowLeft className="w-4 h-4" /> Kembali
+          </Button>
 
           {/* Header & Steps */}
           <div className="flex flex-col items-center justify-center text-center gap-8 mb-10">
@@ -139,14 +161,14 @@ export default function OrderCreatePage() {
               {[1, 2, 3].map((s) => (
                 <div key={s} className="flex items-center flex-1 last:flex-none">
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all shrink-0",
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-none shrink-0",
                     step >= s ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-slate-200 text-slate-400"
                   )}>
                     {s}
                   </div>
                   {s < 3 && (
                     <div className="flex-1 px-2">
-                       <div className={cn("h-1.5 w-full rounded-full transition-colors duration-300", step > s ? "bg-primary" : "bg-slate-200")} />
+                       <div className={cn("h-1.5 w-full rounded-full transition-colors ", step > s ? "bg-primary" : "bg-slate-200")} />
                     </div>
                   )}
                 </div>
@@ -155,7 +177,7 @@ export default function OrderCreatePage() {
           </div>
 
           <div className={cn(
-            "items-start transition-all duration-500",
+            "items-start transition-none ",
             step === 1 ? "max-w-4xl mx-auto" : "grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
           )}>
              <div className={cn(step === 1 ? "" : "lg:col-span-2")}>
@@ -166,11 +188,11 @@ export default function OrderCreatePage() {
                   <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <Card
-                        className={cn("cursor-pointer transition-all hover:border-primary/50 relative overflow-hidden", productType === 'pcb_print' ? "border-primary ring-1 ring-primary shadow-md" : "")}
+                        className={cn("cursor-pointer transition-none hover:border-primary/50 relative overflow-hidden", productType === 'pcb_print' ? "border-primary ring-1 ring-primary shadow-md" : "")}
                         onClick={() => setProductType('pcb_print')}
                       >
                         <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-                          <div className={cn("p-4 rounded-2xl", productType === 'pcb_print' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
+                          <div className={cn("p-4 rounded-md", productType === 'pcb_print' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
                             <Cpu className="w-8 h-8" />
                           </div>
                           <div>
@@ -182,11 +204,11 @@ export default function OrderCreatePage() {
                       </Card>
 
                       <Card
-                        className={cn("cursor-pointer transition-all hover:border-primary/50 relative overflow-hidden", productType === 'design' ? "border-primary ring-1 ring-primary shadow-md" : "")}
+                        className={cn("cursor-pointer transition-none hover:border-primary/50 relative overflow-hidden", productType === 'design' ? "border-primary ring-1 ring-primary shadow-md" : "")}
                         onClick={() => setProductType('design')}
                       >
                         <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-                          <div className={cn("p-4 rounded-2xl", productType === 'design' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
+                          <div className={cn("p-4 rounded-md", productType === 'design' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
                             <PenTool className="w-8 h-8" />
                           </div>
                           <div>
@@ -198,11 +220,11 @@ export default function OrderCreatePage() {
                       </Card>
 
                       <Card
-                        className={cn("cursor-pointer transition-all hover:border-primary/50 relative overflow-hidden", productType === 'assembly' ? "border-primary ring-1 ring-primary shadow-md" : "")}
+                        className={cn("cursor-pointer transition-none hover:border-primary/50 relative overflow-hidden", productType === 'assembly' ? "border-primary ring-1 ring-primary shadow-md" : "")}
                         onClick={() => setProductType('assembly')}
                       >
                         <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-                          <div className={cn("p-4 rounded-2xl", productType === 'assembly' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
+                          <div className={cn("p-4 rounded-md", productType === 'assembly' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
                             <Wrench className="w-8 h-8" />
                           </div>
                           <div>
@@ -254,7 +276,7 @@ export default function OrderCreatePage() {
                               <div className="grid grid-cols-2 gap-4">
                                 {['single', 'double'].map(l => (
                                   <button key={l} onClick={() => setForm({ ...form, layers: l })} className={cn(
-                                    "py-3 rounded-xl border-2 font-bold transition-all",
+                                    "py-3 rounded-xl border-2 font-bold transition-none",
                                     form.layers === l ? "border-primary bg-primary/5 text-primary" : "border-slate-200 bg-white hover:border-slate-300"
                                   )}>
                                     {l.toUpperCase()} LAYER
@@ -365,24 +387,51 @@ export default function OrderCreatePage() {
 
                         {/* Alamat Pengiriman Section */}
                         <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-                          <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 flex items-center gap-2 mb-4">
-                            <MapPin className="w-4 h-4 text-primary" /> Alamat Pengiriman
-                          </h4>
-                          {actualUser?.address ? (
-                            <div className="text-sm font-medium text-slate-600 bg-white p-4 rounded-xl border border-slate-200">
-                              <p className="font-bold text-slate-800 mb-1">{actualUser.name}</p>
-                              <p>{actualUser.address.full_address}</p>
-                              <p>{actualUser.address.village}, {actualUser.address.district}</p>
-                              <p>{actualUser.address.city}, {actualUser.address.province} - {actualUser.address.postal_code}</p>
-                              <p className="mt-2 text-primary">Telp: {actualUser.address.phone}</p>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-primary" /> Informasi Pengiriman
+                            </h4>
+                            <div className="flex items-center gap-2 text-sm font-bold border rounded-lg p-1 bg-white">
+                              <button onClick={() => setUseCustomAddress(false)} className={cn("px-3 py-1.5 rounded-md transition-colors", !useCustomAddress ? "bg-primary text-white" : "text-slate-500 hover:text-slate-800")}>Alamat Profil</button>
+                              <button onClick={() => setUseCustomAddress(true)} className={cn("px-3 py-1.5 rounded-md transition-colors", useCustomAddress ? "bg-primary text-white" : "text-slate-500 hover:text-slate-800")}>Ganti Alamat</button>
                             </div>
+                          </div>
+
+                          {!useCustomAddress ? (
+                            actualUser?.address ? (
+                              <div className="text-sm font-medium text-slate-600 bg-white p-4 rounded-xl border border-slate-200">
+                                <p className="font-bold text-slate-800 mb-1">{actualUser.name}</p>
+                                <p>{actualUser.address.full_address}</p>
+                                <p>{actualUser.address.village}, {actualUser.address.district}</p>
+                                <p>{actualUser.address.city}, {actualUser.address.province} - {actualUser.address.postal_code}</p>
+                                <p className="mt-2 text-primary">Telp: {actualUser.address.phone}</p>
+                              </div>
+                            ) : (
+                              <div className="p-4 bg-amber-50 text-amber-700 rounded-xl text-sm font-bold border border-amber-200 flex items-start gap-2">
+                                <AlertTriangle className="w-5 h-5 shrink-0" />
+                                Bapak/Ibu belum mengatur alamat pengiriman secara konkrit. Silakan atur di Profil, atau gunakan opsi "Ganti Alamat" di atas.
+                              </div>
+                            )
                           ) : (
-                            <div className="p-4 bg-amber-50 text-amber-700 rounded-xl text-sm font-bold border border-amber-200 flex items-start gap-2">
-                              <AlertTriangle className="w-5 h-5 shrink-0" />
-                              Bapak/Ibu belum mengatur alamat pengiriman secara konkrit. Silakan atur di Profil untuk estimasi kurir pengiriman.
+                            <div className="bg-white p-5 rounded-xl border border-primary/30 shadow-sm  space-y-4">
+                              <div className="p-3 bg-primary/10 text-primary text-xs font-bold rounded-lg mb-2">
+                                <Info className="w-4 h-4 inline mr-1" /> Alamat ini hanya berlaku eksklusif untuk pesanan ini saja (Override).
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-600">Alamat Lengkap</label>
+                                <Input value={customAddress.full_address} onChange={e => setCustomAddress({...customAddress, full_address: e.target.value})} placeholder="Nama jalan, RT/RW, Patokan" />
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-2"><label className="text-xs font-bold text-slate-600">Provinsi</label><Input value={customAddress.province} onChange={e => setCustomAddress({...customAddress, province: e.target.value})} placeholder="Provinsi" /></div>
+                                <div className="space-y-2"><label className="text-xs font-bold text-slate-600">Kota/Kota</label><Input value={customAddress.city} onChange={e => setCustomAddress({...customAddress, city: e.target.value})} placeholder="Kota" /></div>
+                                <div className="space-y-2"><label className="text-xs font-bold text-slate-600">Kecamatan</label><Input value={customAddress.district} onChange={e => setCustomAddress({...customAddress, district: e.target.value})} placeholder="Kecamatan" /></div>
+                                <div className="space-y-2"><label className="text-xs font-bold text-slate-600">Desa/Kelurahan</label><Input value={customAddress.village} onChange={e => setCustomAddress({...customAddress, village: e.target.value})} placeholder="Desa" /></div>
+                                <div className="space-y-2"><label className="text-xs font-bold text-slate-600">Kode Pos</label><Input value={customAddress.postal_code} onChange={e => setCustomAddress({...customAddress, postal_code: e.target.value})} placeholder="Kode Pos" /></div>
+                                <div className="space-y-2"><label className="text-xs font-bold text-slate-600">No HP</label><Input value={customAddress.phone} onChange={e => setCustomAddress({...customAddress, phone: e.target.value})} placeholder="No Handphone aktif" /></div>
+                              </div>
                             </div>
                           )}
-                            </div>
+                        </div>
 
                         {/* Detail Spesifikasi */}
                         <div className="p-6 border-b border-slate-100">
@@ -427,7 +476,7 @@ export default function OrderCreatePage() {
 
              {/* Pricing Sidebar */}
              {step >= 2 && (
-               <div className="lg:sticky top-24 animate-in fade-in slide-in-from-right-4 duration-500">
+               <div className="lg:sticky top-24  ">
                 <Card className="border-none bg-[#1e293b] text-white overflow-hidden shadow-2xl shadow-slate-900/10">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-16 -mt-16" />
                   <CardHeader className="relative z-10 border-b border-white/10 pb-4">

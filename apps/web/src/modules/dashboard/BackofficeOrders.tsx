@@ -74,7 +74,7 @@ export default function BackofficeOrders() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8  ">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <h1 className="text-3xl font-black">Manajemen Pesanan</h1>
@@ -102,7 +102,7 @@ export default function BackofficeOrders() {
                <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                <Input 
                  placeholder="Cari Order ID atau Nama Pelanggan..." 
-                 className="pl-12 h-12 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-primary/20 transition-all"
+                 className="pl-12 h-12 rounded-md bg-slate-50 border-transparent focus:bg-white focus:border-primary/20 transition-none"
                  value={searchTerm}
                  onChange={(e) => setSearchTerm(e.target.value)}
                />
@@ -111,7 +111,7 @@ export default function BackofficeOrders() {
                <div className="relative w-full md:w-48">
                   <Filter className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <select 
-                    className="w-full h-12 pl-10 pr-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20"
+                    className="w-full h-12 pl-10 pr-4 bg-slate-50 border-none rounded-md text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                   >
@@ -122,7 +122,7 @@ export default function BackofficeOrders() {
                      <option value="shipped">Dikirim</option>
                   </select>
                </div>
-               <Button onClick={fetchOrders} className="h-12 w-12 rounded-2xl bg-white border-2 text-primary hover:bg-primary hover:text-white transition-all shadow-none">
+               <Button onClick={fetchOrders} className="h-12 w-12 rounded-md bg-white border-2 text-primary hover:bg-primary hover:text-white transition-none shadow-none">
                   <Loader2 className={cn("w-5 h-5", isLoading && "animate-spin")} />
                </Button>
             </div>
@@ -155,7 +155,7 @@ export default function BackofficeOrders() {
                              animate={{ opacity: 1, y: 0 }}
                              transition={{ delay: i * 0.05 }}
                              className={cn(
-                               "border-b last:border-0 hover:bg-slate-50/80 transition-all cursor-pointer group",
+                               "border-b last:border-0 hover:bg-slate-50/80 transition-none cursor-pointer group",
                                order.status === 'pending' && "bg-amber-50/20"
                              )}
                            >

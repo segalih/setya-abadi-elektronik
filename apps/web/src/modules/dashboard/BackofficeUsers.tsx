@@ -86,7 +86,7 @@ export default function BackofficeUsers() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8  ">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <h1 className="text-3xl font-black">Manajemen Akses Staff</h1>
@@ -104,13 +104,13 @@ export default function BackofficeUsers() {
                <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                <Input 
                  placeholder="Cari Nama atau Email Staff..." 
-                 className="pl-12 h-12 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-primary/20 transition-all font-medium"
+                 className="pl-12 h-12 rounded-md bg-slate-50 border-transparent focus:bg-white focus:border-primary/20 transition-none font-medium"
                  value={searchTerm}
                  onChange={(e) => setSearchTerm(e.target.value)}
                  onKeyDown={(e) => e.key === 'Enter' && fetchUsers()}
                />
             </div>
-            <Button onClick={fetchUsers} className="h-12 px-6 rounded-2xl bg-white border-2 text-primary hover:bg-primary hover:text-white transition-all shadow-none font-bold">
+            <Button onClick={fetchUsers} className="h-12 px-6 rounded-md bg-white border-2 text-primary hover:bg-primary hover:text-white transition-none shadow-none font-bold">
                Cari Database
             </Button>
          </CardContent>
@@ -139,7 +139,7 @@ export default function BackofficeUsers() {
                              animate={{ opacity: 1, y: 0 }}
                              transition={{ delay: i * 0.05 }}
                              className={cn(
-                               "border-b last:border-0 hover:bg-slate-50/80 transition-all group",
+                               "border-b last:border-0 hover:bg-slate-50/80 transition-none group",
                                currentUser?.id === u.id && "bg-primary/5"
                              )}
                            >

@@ -64,7 +64,7 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50 pcb-grid relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg aspect-square bg-primary/5 rounded-full blur-[100px] -z-10" />
         
-        <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="w-full max-w-md space-y-8  ">
           <div className="text-center">
             <Link to="/" className="inline-flex items-center gap-2 group mb-6">
               <div className="p-2 rounded-lg bg-primary">
@@ -98,10 +98,7 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Password</label>
-                    <a href="#" className="text-[10px] font-bold text-primary hover:underline">Lupa Password?</a>
-                  </div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground block text-left">Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <Input 
@@ -116,25 +113,29 @@ export default function LoginPage() {
                 </div>
 
                 {errorMsg && (
-                  <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2 text-xs font-bold text-red-500">
+                  <div className="p-3 bg-red-50 border border-red-100 flex items-center justify-center gap-2 text-xs font-bold text-red-600 rounded-md">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {errorMsg}
                   </div>
                 )}
 
-                <Button type="submit" className="w-full h-12" disabled={loginMutation.isPending}>
+                <Button type="submit" className="w-full h-12 mt-4 text-sm font-bold tracking-wide uppercase" disabled={loginMutation.isPending}>
                   {loginMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                     <>
-                      Login ke Dashboard
+                      Login ke Akun
                       <ArrowRight className="ml-2 w-4 h-4" />
                     </>
                   )}
                 </Button>
+                
+                <div className="text-center mt-4">
+                  <a href="#" className="text-[11px] font-bold text-slate-500 hover:text-primary transition-colors">Lupa Password?</a>
+                </div>
               </form>
             </CardContent>
-            <CardFooter className="flex flex-col gap-4 border-t bg-slate-50/50 pt-6">
-              <div className="text-center text-sm text-muted-foreground">
-                Belum punya akun? <Link to="/register" className="text-primary font-bold hover:underline">Daftar Sekarang</Link>
+            <CardFooter className="flex flex-col gap-4 border-t bg-slate-50/50 pt-6 rounded-b-md">
+              <div className="text-center text-sm font-medium text-slate-600">
+                Belum punya akun? <Link to="/register" className="text-primary font-black hover:underline">Buat Akun Baru</Link>
               </div>
             </CardFooter>
           </Card>

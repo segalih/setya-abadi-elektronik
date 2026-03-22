@@ -50,7 +50,7 @@ export default function RegisterPage() {
       <div className="min-h-screen py-8 sm:py-12 flex items-center justify-center p-4 sm:p-6 bg-slate-50 pcb-grid relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -z-10" />
         
-        <div className="w-full max-w-3xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="w-full max-w-3xl space-y-8  ">
           <div className="text-center">
             <Link to="/" className="inline-flex items-center gap-2 group mb-6">
               <div className="p-2 rounded-lg bg-primary">
@@ -196,25 +196,25 @@ export default function RegisterPage() {
                 </div>
 
                 {errorMsg && (
-                  <div className="p-3 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2 text-xs font-bold text-red-500">
+                  <div className="p-3 bg-red-50 border border-red-100 flex items-center justify-center gap-2 text-xs font-bold text-red-600 rounded-md">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {errorMsg}
                   </div>
                 )}
 
-                <Button type="submit" className="w-full h-12 mt-8 text-base shadow-xl shadow-primary/20" disabled={registerMutation.isPending}>
+                <Button type="submit" className="w-full h-12 mt-8 text-sm font-bold tracking-wide uppercase" disabled={registerMutation.isPending}>
                   {registerMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                     <>
-                      Daftar dan Buat Akun
-                      <ArrowRight className="ml-2 w-5 h-5" />
+                      Daftar dan Akun Baru
+                      <ArrowRight className="ml-2 w-4 h-4" />
                     </>
                   )}
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="flex flex-col gap-4 border-t bg-slate-50/50 pt-6 rounded-b-xl">
-              <div className="text-center text-sm text-muted-foreground">
-                Sudah punya akun? <Link to="/login" className="text-primary font-bold hover:underline">Masuk di Sini</Link>
+            <CardFooter className="flex flex-col gap-4 border-t bg-slate-50/50 pt-6 rounded-b-md">
+              <div className="text-center text-sm font-medium text-slate-600">
+                Sudah punya akun? <Link to="/login" className="text-primary font-black hover:underline">Masuk di Sini</Link>
               </div>
             </CardFooter>
           </Card>

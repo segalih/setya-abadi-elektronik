@@ -52,52 +52,50 @@ export default function BackofficeLayout() {
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-in fade-in"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden "
           onClick={() => setIsSidebarOpen(false)} 
         />
       )}
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 lg:relative bg-white border-r border-slate-200 h-screen flex flex-col transition-all duration-300 shadow-xl lg:shadow-none lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 lg:relative bg-white border-r border-slate-200 h-screen flex flex-col transition-none  shadow-xl lg:shadow-none lg:translate-x-0",
         isSidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:w-20 lg:translate-x-0"
       )}>
         <div className="flex items-center gap-3 h-16 px-6 border-b border-slate-100 flex-shrink-0">
           <div className="p-2 rounded-xl bg-primary flex-shrink-0">
             <Cpu className="w-5 h-5 text-white" />
           </div>
-          {isSidebarOpen && <span className="font-black tracking-tight animate-in fade-in slide-in-from-left-2 transition-all">SETYA ABADI</span>}
+          {isSidebarOpen && <span className="font-black tracking-tight  transition-none">SETYA ABADI</span>}
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
           {filteredMenu.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
             return (
-              <Button 
+              <Link
                 key={item.path}
-                asChild
-                variant={isActive ? "default" : "ghost"}
+                to={item.path}
                 className={cn(
-                  "w-full h-11 transition-all group overflow-hidden",
-                  isActive ? "bg-primary text-white shadow-md shadow-primary/20" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
+                  "flex items-center w-full min-h-[44px] transition-none group overflow-hidden rounded-md border",
+                  isActive ? "bg-primary text-primary-foreground border-primary" : "text-slate-500 border-transparent hover:text-slate-900 hover:bg-slate-100 hover:border-slate-200",
                   isSidebarOpen ? "justify-start px-3" : "justify-center px-0"
                 )}
+                title={!isSidebarOpen ? item.title : undefined}
               >
-                <Link to={item.path}>
-                  <Icon className={cn("w-5 h-5 flex-shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-slate-700")} />
-                  {isSidebarOpen && <span className="font-semibold ml-3">{item.title}</span>}
-                </Link>
-              </Button>
+                <Icon className={cn("w-5 h-5 flex-shrink-0", isActive ? "text-primary-foreground" : "text-slate-400 group-hover:text-slate-700")} />
+                {isSidebarOpen && <span className="font-bold ml-3 flex-1 truncate">{item.title}</span>}
+              </Link>
             )
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50 mt-auto">
+         <div className="p-4 border-t border-slate-100 bg-slate-50/50 mt-auto">
            {isSidebarOpen ? (
              <div className="flex flex-col gap-3">
-               <div className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
+               <div className="flex items-center gap-3 p-3 rounded-md bg-white border border-slate-200 shadow-sm">
+                  <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
                      {actualUser?.name?.charAt(0) || 'U'}
                   </div>
                   <div className="min-w-0">
@@ -110,7 +108,7 @@ export default function BackofficeLayout() {
                    if (window.confirm("Keluar dari sesi admin?")) logout();
                  }} 
                  variant="outline" 
-                 className="w-full text-red-500 hover:bg-red-50 hover:text-red-600 border-red-100 h-10"
+                 className="w-full text-red-500 border-red-500/20 hover:bg-red-50 hover:text-red-700 hover:border-red-500/50 h-11 rounded-md"
                >
                   <LogOut className="w-4 h-4 mr-2" />
                   <span className="font-bold text-xs uppercase tracking-widest">Logout</span>
@@ -121,10 +119,10 @@ export default function BackofficeLayout() {
                  onClick={() => {
                    if (window.confirm("Keluar dari sesi admin?")) logout();
                  }} 
-                 variant="ghost" 
-                 className="w-full text-red-500 hover:bg-red-50 hover:text-red-600 h-10 px-0"
+                 variant="outline" 
+                 className="w-full text-red-500 border-red-500/20 hover:bg-red-50 hover:text-red-700 hover:border-red-500/50 h-11 px-0 flex items-center justify-center rounded-md"
                >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-5 h-5 shrink-0" />
              </Button>
            )}
         </div>

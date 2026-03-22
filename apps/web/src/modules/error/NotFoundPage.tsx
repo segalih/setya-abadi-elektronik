@@ -14,7 +14,7 @@ export default function NotFoundPage() {
            initial={{ scale: 0.8, opacity: 0 }}
            animate={{ scale: 1, opacity: 1 }}
            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-           className="w-24 h-24 bg-red-100 text-red-500 rounded-3xl flex items-center justify-center mb-8 shadow-xl shadow-red-500/10"
+           className="w-24 h-24 bg-red-100 text-red-500 rounded-md flex items-center justify-center mb-8 shadow-xl shadow-red-500/10"
         >
            <AlertTriangle className="w-12 h-12" />
         </motion.div>

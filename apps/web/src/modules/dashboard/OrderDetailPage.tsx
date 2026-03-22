@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
@@ -22,12 +22,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import MotionPage, { revealUp } from '@/components/shared/MotionWrapper';
+import MotionPage from '@/components/shared/MotionWrapper';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
 
 export default function OrderDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,9 +65,9 @@ export default function OrderDetailPage() {
       <div className="min-h-screen bg-slate-50 pb-20 pcb-grid">
         <header className="glass h-20 sticky top-0 z-10 flex items-center px-6 md:px-12 justify-between">
            <div className="flex items-center gap-4">
-              <Link to="/dashboard">
-                <Button variant="ghost" size="icon" className="rounded-full"><ArrowLeft className="w-5 h-5" /></Button>
-              </Link>
+              <Button variant="outline" onClick={() => navigate(-1)} className="bg-white flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" /> Kembali
+              </Button>
               <div>
                 <h1 className="text-lg font-black">{order.order_number}</h1>
                 <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{order.product_type} — {new Date(order.created_at).toLocaleDateString()}</p>
@@ -101,7 +102,7 @@ export default function OrderDetailPage() {
                             initial={false}
                             animate={isCurrent ? { scale: 1.2 } : { scale: 1 }}
                             className={cn(
-                              "w-12 h-12 rounded-full border-4 flex items-center justify-center transition-all duration-500",
+                              "w-12 h-12 rounded-full border-4 flex items-center justify-center transition-none ",
                               isPast ? "bg-primary border-primary text-white" : isCurrent ? "bg-white border-primary text-primary shadow-xl shadow-primary/20" : "bg-white border-slate-100 text-slate-300"
                             )}
                           >
@@ -158,23 +159,80 @@ export default function OrderDetailPage() {
                        </CardHeader>
                        <CardContent className="p-6">
                           <div className="space-y-4 text-xs font-medium">
-                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Layer:</span>
-                                <span className="font-bold border-b-2 border-primary/20">{order.detail?.data_json?.layers} Layer</span>
-                             </div>
-                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Dimensi:</span>
-                                <span className="font-bold border-b-2 border-primary/20">{order.detail?.data_json?.width}x{order.detail?.data_json?.height} cm</span>
-                             </div>
-                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Material:</span>
-                                <span className="font-bold border-b-2 border-primary/20">{order.detail?.data_json?.material}</span>
-                             </div>
-                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Masking Color:</span>
-                                <span className="font-bold border-b-2 border-primary/20 capitalize">{order.detail?.data_json?.masking_color}</span>
-                             </div>
+                             {order.detail?.type === 'pcb_print' && (
+                                <>
+                                  <div className="flex justify-between">
+                                     <span className="text-muted-foreground">Kuantitas:</span>
+                                     <span className="font-bold border-b-2 border-primary/20">{order.detail?.data_json?.quantity} keping</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                     <span className="text-muted-foreground">Layer:</span>
+                                     <span className="font-bold border-b-2 border-primary/20">{order.detail?.data_json?.layers} Layer</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                     <span className="text-muted-foreground">Dimensi:</span>
+                                     <span className="font-bold border-b-2 border-primary/20">{order.detail?.data_json?.width}x{order.detail?.data_json?.height} cm</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                     <span className="text-muted-foreground">Material:</span>
+                                     <span className="font-bold border-b-2 border-primary/20">{order.detail?.data_json?.material}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                     <span className="text-muted-foreground">Masking Color:</span>
+                                     <span className="font-bold border-b-2 border-primary/20 capitalize">{order.detail?.data_json?.masking_color}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                     <span className="text-muted-foreground">Silkscreen:</span>
+                                     <span className="font-bold border-b-2 border-primary/20 capitalize">{order.detail?.data_json?.silkscreen === 'yes' ? order.detail?.data_json?.silkscreen_color : 'Tidak Ada'}</span>
+                                  </div>
+                                </>
+                             )}
+                             {order.detail?.type === 'design' && (
+                                <div className="space-y-2">
+                                  <span className="text-muted-foreground block">Deskripsi Desain:</span>
+                                  <p className="font-bold text-slate-800 bg-slate-50 p-3 rounded-md border">{order.detail?.data_json?.design_description}</p>
+                                </div>
+                             )}
+                             {order.detail?.type === 'assembly' && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Jumlah Komponen:</span>
+                                  <span className="font-bold border-b-2 border-primary/20">{order.detail?.data_json?.component_count} titik</span>
+                                </div>
+                             )}
+                             {order.detail?.data_json?.notes && (
+                                <div className="pt-2 border-t mt-2">
+                                  <span className="text-muted-foreground block mb-1">Catatan Tambahan:</span>
+                                  <p className="text-slate-600 italic">"{order.detail?.data_json?.notes}"</p>
+                                </div>
+                             )}
                           </div>
+                       </CardContent>
+                    </Card>
+
+                    {/* Alamat Pengiriman */}
+                    <Card className="border-none shadow-sm sm:col-span-2">
+                       <CardHeader className="bg-slate-100/30 border-b">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                             <MapPin className="w-4 h-4 text-emerald-600" />
+                             Alamat Pengiriman
+                          </CardTitle>
+                       </CardHeader>
+                       <CardContent className="p-6">
+                          {(() => {
+                            const addr = order.detail?.data_json?.shipping_address || order.user?.address;
+                            if (!addr) return <div className="text-xs text-muted-foreground italic bg-slate-50 p-4 rounded-md border text-center font-medium">Alamat pengiriman belum diatur. Silakan atur di Profil.</div>;
+                            return (
+                              <div className="space-y-1 text-sm bg-slate-50 p-4 rounded-md border border-slate-100">
+                                <p className="font-black text-slate-800 uppercase tracking-widest text-xs mb-2 flex items-center gap-2">
+                                  {order.user?.name} {order.detail?.data_json?.shipping_address ? <Badge variant="secondary" className="text-[8px] px-1 py-0">Custom Override</Badge> : <Badge className="bg-primary/10 text-primary text-[8px] px-1 py-0 border-0 shadow-none hover:bg-primary/10">Default Profile</Badge>}
+                                </p>
+                                <p className="text-slate-600 font-medium leading-relaxed">{addr.full_address}</p>
+                                <p className="text-slate-500 text-xs mt-1">{addr.village}, {addr.district}</p>
+                                <p className="text-slate-500 text-xs">{addr.city}, {addr.province} {addr.postal_code}</p>
+                                {addr.phone && <p className="text-slate-800 text-xs pt-3 mt-3 border-t font-black flex items-center gap-2">📱 {addr.phone}</p>}
+                              </div>
+                            );
+                          })()}
                        </CardContent>
                     </Card>
                  </div>
@@ -230,8 +288,8 @@ export default function OrderDetailPage() {
                        </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
-                       <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4 transition-all hover:border-primary/40 group">
-                          <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                       <div className="p-4 rounded-md bg-slate-50 border border-slate-100 flex items-center gap-4 transition-none hover:border-primary/40 group">
+                          <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 ">
                              <Download className="w-5 h-5" />
                           </div>
                           <div className="min-w-0">

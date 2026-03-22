@@ -20,7 +20,13 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
 
+import { useAuthStore } from '@/store/authStore';
+
 export default function BackofficeDashboard() {
+  const { user } = useAuthStore();
+  const actualUser = (user as any)?.user || user;
+  const isSupervisor = actualUser?.roles?.some((r: any) => r.name === 'supervisor');
+
   const [stats, setStats] = useState<any>(null);
   const [health, setHealth] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,34 +58,34 @@ export default function BackofficeDashboard() {
   }, []);
 
   const statCards = [
-    { title: 'Total Pesanan', value: stats?.total_orders, icon: Package, color: 'text-primary', bg: 'bg-primary/10', desc: 'Total pesanan masuk bulan ini' },
-    { title: 'Total Omzet', value: `Rp ${stats?.total_revenue.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50', desc: 'Pendapatan kotor terverifikasi' },
-    { title: 'Antrian Review', value: stats?.pending_review, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50', desc: 'Pesanan menunggu pengecekan file' },
-    { title: 'Proses Produksi', value: stats?.active_production, icon: Activity, color: 'text-secondary', bg: 'bg-secondary/10', desc: 'PCB yang sedang berada di mesin' },
-  ];
+    { title: 'Total Pesanan', value: stats?.total_orders, icon: Package, color: 'text-primary', bg: 'bg-primary/10', desc: 'Total pesanan masuk bulan ini', show: true },
+    { title: 'Total Omzet', value: `Rp ${stats?.total_revenue?.toLocaleString('id-ID')}`, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50', desc: 'Pendapatan kotor terverifikasi', show: isSupervisor },
+    { title: 'Antrian Review', value: stats?.pending_review, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50', desc: 'Pesanan menunggu pengecekan file', show: true },
+    { title: 'Proses Produksi', value: stats?.active_production, icon: Activity, color: 'text-secondary', bg: 'bg-secondary/10', desc: 'PCB yang sedang berada di mesin', show: true },
+  ].filter(card => card.show);
 
   return (
     <div className="space-y-10">
       {/* Welcome Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-           <h1 className="text-3xl font-black">Executive Overview</h1>
-           <p className="text-muted-foreground font-medium">Pantau performa operasional Setya Abadi Elektronik secara real-time.</p>
+           <h1 className="text-3xl font-black">{isSupervisor ? 'Executive Overview' : 'Operator Dashboard'}</h1>
+           <p className="text-muted-foreground font-medium">{isSupervisor ? 'Pantau performa operasional Setya Abadi Elektronik secara real-time.' : 'Kelola dan perbarui status antrian pesanan PCB.'}</p>
         </div>
         <div className="flex items-center gap-3">
-           <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-4 py-1.5 font-bold flex items-center gap-2">
+           <Badge className={cn("px-4 py-1.5 font-bold flex items-center gap-2", isSupervisor ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-primary/10 text-primary border-primary/20")}>
               <ShieldCheck className="w-4 h-4" />
-              Secure Admin Session
+              {isSupervisor ? 'Supervisor Session' : 'Staff Session'}
            </Badge>
-           <Button variant="outline" className="h-11 rounded-xl font-bold bg-white border-2">Generate Report</Button>
+           {isSupervisor && <Button variant="outline" className="h-11 rounded-xl font-bold bg-white border-2 border-slate-200 text-slate-700">Generate Report</Button>}
         </div>
       </div>
 
       {/* Main Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
          {statCards.map((stat, i) => (
-           <Card key={i} className="border-none shadow-sm group hover:shadow-xl transition-all duration-500 overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 opacity-10 group-hover:scale-150 transition-transform duration-700">
+           <Card key={i} className="border-none shadow-sm group hover:shadow-xl transition-none  overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 opacity-10 group-hover:scale-150  ">
                  <stat.icon className={cn("w-full h-full", stat.color)} />
               </div>
               <CardHeader className="pb-2">
@@ -99,62 +105,64 @@ export default function BackofficeDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-         {/* System Health */}
-         <Card className="border-none shadow-sm flex flex-col">
-            <CardHeader className="bg-slate-100/30 border-b">
-               <CardTitle className="text-sm flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-primary" />
-                  System Health Metrics
-               </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 p-6 space-y-6">
-               <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
-                           <Cpu className="w-4 h-4" />
-                        </div>
-                        <span className="text-sm font-bold">Laravel API Core</span>
-                     </div>
-                     <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px]">OPERATIONAL</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
-                           <Bell className="w-4 h-4" />
-                        </div>
-                        <span className="text-sm font-bold">Notification Svc</span>
-                     </div>
-                     <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px]">OPERATIONAL</Badge>
-                  </div>
-                  <div className="flex justify-between items-center opacity-50">
-                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
-                           <Activity className="w-4 h-4" />
-                        </div>
-                        <span className="text-sm font-bold text-slate-500">Payment Webhook</span>
-                     </div>
-                     <Badge variant="secondary" className="font-black text-[9px]">IDLE</Badge>
-                  </div>
-               </div>
+         {/* System Health : Supervisor Only */}
+         {isSupervisor && (
+           <Card className="border-none shadow-sm flex flex-col">
+              <CardHeader className="bg-slate-100/30 border-b">
+                 <CardTitle className="text-sm flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary" />
+                    System Health Metrics
+                 </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 p-6 space-y-6">
+                 <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                       <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
+                             <Cpu className="w-4 h-4" />
+                          </div>
+                          <span className="text-sm font-bold">Laravel API Core</span>
+                       </div>
+                       <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px]">OPERATIONAL</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                       <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
+                             <Bell className="w-4 h-4" />
+                          </div>
+                          <span className="text-sm font-bold">Notification Svc</span>
+                       </div>
+                       <Badge className="bg-emerald-500 text-white border-0 font-black text-[9px]">OPERATIONAL</Badge>
+                    </div>
+                    <div className="flex justify-between items-center opacity-50">
+                       <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
+                             <Activity className="w-4 h-4" />
+                          </div>
+                          <span className="text-sm font-bold text-slate-500">Payment Webhook</span>
+                       </div>
+                       <Badge variant="secondary" className="font-black text-[9px]">IDLE</Badge>
+                    </div>
+                 </div>
 
-               <div className="pt-6 border-t mt-auto">
-                  <div className="flex justify-between text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-2">
-                     <span>DB Cluster Utilization</span>
-                     <span>24%</span>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                     <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: '24%' }}
-                        className="h-full bg-primary"
-                     />
-                  </div>
-               </div>
-            </CardContent>
-         </Card>
+                 <div className="pt-6 border-t mt-auto">
+                    <div className="flex justify-between text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-2">
+                       <span>DB Cluster Utilization</span>
+                       <span>24%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                       <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: '24%' }}
+                          className="h-full bg-primary"
+                       />
+                    </div>
+                 </div>
+              </CardContent>
+           </Card>
+         )}
 
-         <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden">
+         <Card className={cn("border-none shadow-sm overflow-hidden", isSupervisor ? "lg:col-span-2" : "lg:col-span-3")}>
             <CardHeader className="bg-slate-100/30 border-b flex flex-row items-center justify-between">
                <div>
                   <CardTitle className="text-sm">Antrian Produksi Strategis</CardTitle>
@@ -190,10 +198,11 @@ export default function BackofficeDashboard() {
          </Card>
       </div>
 
-      {/* Quick Access Area */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-         <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-primary/10 to-transparent border border-white shadow-inner flex items-center gap-6 group hover:translate-y-[-4px] transition-all duration-300">
-            <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+      {/* Quick Access Area : Supervisor Only */}
+      {isSupervisor && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+         <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-primary/10 to-transparent border border-white shadow-inner flex items-center gap-6 group hover:translate-y-[-4px] transition-none ">
+            <div className="w-14 h-14 rounded-md bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 ">
                <ShieldCheck className="w-7 h-7" />
             </div>
             <div>
@@ -203,8 +212,8 @@ export default function BackofficeDashboard() {
             <ArrowUpRight className="ml-auto w-5 h-5 text-muted-foreground opacity-50" />
          </div>
          
-         <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-secondary/10 to-transparent border border-white shadow-inner flex items-center gap-6 group hover:translate-y-[-4px] transition-all duration-300">
-            <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+         <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-secondary/10 to-transparent border border-white shadow-inner flex items-center gap-6 group hover:translate-y-[-4px] transition-none ">
+            <div className="w-14 h-14 rounded-md bg-white shadow-sm flex items-center justify-center text-secondary group-hover:scale-110 ">
                <Settings className="w-7 h-7" />
             </div>
             <div>
@@ -214,8 +223,8 @@ export default function BackofficeDashboard() {
             <ArrowUpRight className="ml-auto w-5 h-5 text-muted-foreground opacity-50" />
          </div>
 
-         <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-accent/10 to-transparent border border-white shadow-inner flex items-center gap-6 group hover:translate-y-[-4px] transition-all duration-300">
-            <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+         <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-accent/10 to-transparent border border-white shadow-inner flex items-center gap-6 group hover:translate-y-[-4px] transition-none ">
+            <div className="w-14 h-14 rounded-md bg-white shadow-sm flex items-center justify-center text-accent group-hover:scale-110 ">
                <AlertCircle className="w-7 h-7" />
             </div>
             <div>
@@ -224,7 +233,8 @@ export default function BackofficeDashboard() {
             </div>
             <ArrowUpRight className="ml-auto w-5 h-5 text-muted-foreground opacity-50" />
          </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -44,7 +44,7 @@ export default function BackofficeCustomers() {
   }, []);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8  ">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <h1 className="text-3xl font-black">Database Pelanggan</h1>
@@ -61,13 +61,13 @@ export default function BackofficeCustomers() {
                <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                <Input 
                  placeholder="Cari Nama, Email, atau No. Telepon..." 
-                 className="pl-12 h-12 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-primary/20 transition-all font-medium"
+                 className="pl-12 h-12 rounded-md bg-slate-50 border-transparent focus:bg-white focus:border-primary/20 transition-none font-medium"
                  value={searchTerm}
                  onChange={(e) => setSearchTerm(e.target.value)}
                  onKeyDown={(e) => e.key === 'Enter' && fetchCustomers()}
                />
             </div>
-            <Button onClick={fetchCustomers} className="h-12 px-6 rounded-2xl bg-white border-2 text-primary hover:bg-primary hover:text-white transition-all shadow-none font-bold">
+            <Button onClick={fetchCustomers} className="h-12 px-6 rounded-md bg-white border-2 text-primary hover:bg-primary hover:text-white transition-none shadow-none font-bold">
                Cari Database
             </Button>
          </CardContent>
@@ -85,11 +85,11 @@ export default function BackofficeCustomers() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.05 }}
                   >
-                     <Card className="border-none shadow-sm hover:shadow-xl transition-all duration-500 group overflow-hidden">
+                     <Card className="border-none shadow-sm hover:shadow-xl transition-none  group overflow-hidden">
                         <div className="h-2 w-full bg-gradient-to-r from-primary to-secondary" />
                         <CardContent className="p-6">
                            <div className="flex items-start justify-between mb-6">
-                              <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-xl font-black text-slate-500 group-hover:bg-primary group-hover:text-white transition-all">
+                              <div className="w-14 h-14 rounded-md bg-slate-100 flex items-center justify-center text-xl font-black text-slate-500 group-hover:bg-primary group-hover:text-white transition-none">
                                  {customer.name.charAt(0)}
                               </div>
                               <div className="flex flex-col items-end gap-2">
@@ -134,7 +134,7 @@ export default function BackofficeCustomers() {
                                  <span className="text-[9px] font-black uppercase text-muted-foreground">Total Orders</span>
                                  <span className="font-black text-primary">{customer.orders_count || 0} Projects</span>
                               </div>
-                              <Button variant="outline" className="text-[10px] font-black uppercase border-2 h-9 px-4 rounded-xl group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
+                              <Button variant="outline" className="text-[10px] font-black uppercase border-2 h-9 px-4 rounded-xl group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-none">
                                  View Profile
                               </Button>
                            </div>

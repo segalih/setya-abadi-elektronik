@@ -137,9 +137,9 @@ class OrderController extends Controller
     public function show(Request $request, string $id)
     {
         if ($request->user()->hasAnyRole(['staff', 'supervisor'])) {
-            $order = Order::with(['detail', 'user', 'updates.user'])->findOrFail($id);
+            $order = Order::with(['detail', 'user.address', 'updates.user'])->findOrFail($id);
         } else {
-            $order = $request->user()->orders()->with(['detail', 'updates.user'])->findOrFail($id);
+            $order = $request->user()->orders()->with(['detail', 'user.address', 'updates.user'])->findOrFail($id);
         }
         return response()->json($order);
     }

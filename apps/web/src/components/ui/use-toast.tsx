@@ -61,7 +61,7 @@ export function Toaster() {
               exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
               layout
               className={cn(
-                "pointer-events-auto relative flex w-full items-start gap-4 rounded-2xl border p-4 shadow-lg shadow-slate-200/50 glass",
+                "pointer-events-auto relative flex w-full items-start gap-4 rounded-md border p-4 shadow-lg shadow-slate-200/50 glass",
                 variants[toast.variant || 'default']
               )}
             >

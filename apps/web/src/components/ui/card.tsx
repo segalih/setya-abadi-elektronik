@@ -10,7 +10,7 @@ const Card = React.forwardRef<
     ref={ref}
     whileHover={animateHover ? { y: -6, transition: { duration: 0.2 } } : {}}
     className={cn(
-      "rounded-2xl border bg-white text-foreground shadow-sm transition-shadow hover:shadow-md",
+      "rounded-md border bg-white text-foreground shadow-sm transition-shadow hover:shadow-md",
       className
     )}
     {...(props as any)}

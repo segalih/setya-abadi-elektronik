@@ -58,7 +58,7 @@ export default function BackofficeAudit() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8  ">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <h1 className="text-3xl font-black">Security Audit Trail</h1>
@@ -75,12 +75,12 @@ export default function BackofficeAudit() {
                <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                <Input 
                  placeholder="Cari berdasarkan User ID, Model, atau IP Address..." 
-                 className="pl-12 h-12 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-primary/20 transition-all font-medium"
+                 className="pl-12 h-12 rounded-md bg-slate-50 border-transparent focus:bg-white focus:border-primary/20 transition-none font-medium"
                  value={searchTerm}
                  onChange={(e) => setSearchTerm(e.target.value)}
                />
             </form>
-            <Button type="button" onClick={fetchLogs} className="h-12 w-12 rounded-2xl bg-white border-2 text-primary hover:bg-primary hover:text-white transition-all shadow-none">
+            <Button type="button" onClick={fetchLogs} className="h-12 w-12 rounded-md bg-white border-2 text-primary hover:bg-primary hover:text-white transition-none shadow-none">
                <Loader2 className={cn("w-5 h-5", isLoading && "animate-spin")} />
             </Button>
          </CardContent>
@@ -98,7 +98,7 @@ export default function BackofficeAudit() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group"
+                      className="bg-white p-6 rounded-md shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group"
                     >
                        <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors" />
                        

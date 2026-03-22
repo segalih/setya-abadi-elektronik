@@ -43,14 +43,14 @@ export default function DashboardPage() {
         {/* Mobile Overlay */}
         {isMobileMenuOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-in fade-in"
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden "
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
 
         {/* Sidebar */}
         <aside className={cn(
-          "fixed inset-y-0 left-0 z-50 lg:relative glass border-r h-screen w-64 flex flex-col p-6 transition-transform duration-300 lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 lg:relative glass border-r h-screen w-64 flex flex-col p-6   lg:translate-x-0",
           isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         )}>
           <div className="flex items-center gap-2 mb-10">
@@ -79,6 +79,10 @@ export default function DashboardPage() {
                  Buat Pesanan Baru
                </Button>
             </div>
+            <Button variant="ghost" className="w-full justify-start gap-3 rounded-xl h-12 text-muted-foreground hover:text-primary mt-2" onClick={() => navigate('/profile')}>
+              <UserIcon className="w-5 h-5" />
+              Pengaturan Profil
+            </Button>
           </nav>
 
           <div className="mt-10 pt-6 border-t border-slate-200">

@@ -12,7 +12,7 @@ export default function LandingPage() {
         {/* Navbar */}
         <header className="sticky top-0 z-50 glass h-16 flex items-center px-6 md:px-12 justify-between">
           <div className="flex items-center gap-2 group cursor-pointer">
-            <div className="p-2 rounded-lg bg-primary group-hover:rotate-12 transition-transform">
+            <div className="p-2 rounded-lg bg-primary group-hover:rotate-12 ">
               <Cpu className="w-5 h-5 text-white" />
             </div>
             <span className="font-black text-lg tracking-tight">SETYA ABADI</span>
@@ -59,7 +59,7 @@ export default function LandingPage() {
                 <Link to="/register">
                   <Button size="lg" className="shadow-lg shadow-primary/25 group">
                     Buat Pesanan Baru
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 " />
                   </Button>
                 </Link>
                 <Link to="/login">
@@ -103,7 +103,7 @@ export default function LandingPage() {
                    <Card key={i} className="group border-slate-100 overflow-hidden">
                       <div className={`h-2 w-full ${service.color}`} />
                       <CardHeader>
-                        <div className={`w-12 h-12 rounded-xl ${service.color}/10 flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
+                        <div className={`w-12 h-12 rounded-xl ${service.color}/10 flex items-center justify-center mb-4  group-hover:scale-110`}>
                            <service.icon className={`w-6 h-6 ${service.color.replace('bg-', 'text-')}`} />
                         </div>
                         <CardTitle className="flex items-center justify-between">
@@ -146,7 +146,7 @@ export default function LandingPage() {
                  whileInView={{ opacity: 1, x: 0 }}
                  className="relative"
                >
-                  <div className="aspect-video bg-emerald-100/30 border-2 border-primary/20 rounded-3xl overflow-hidden shadow-2xl">
+                  <div className="aspect-video bg-emerald-100/30 border-2 border-primary/20 rounded-md overflow-hidden shadow-2xl">
                      <img src="https://picsum.photos/800/600?random=1" className="w-full h-full object-cover mix-blend-multiply opacity-80" alt="PCB" />
                   </div>
                </motion.div>
@@ -206,12 +206,12 @@ export default function LandingPage() {
                    { q: 'Bisa cetak custom shape?', a: 'Ya, kami mendukung pemotongan custom dengan routing mesin CNC.' },
                    { q: 'Apakah ada minimum order?', a: 'Untuk prototyping kami melayani mulai dari 5 keping per desain.' },
                  ].map((faq, i) => (
-                   <details key={i} className="group border rounded-2xl overflow-hidden transition-all duration-300 open:shadow-md">
+                   <details key={i} className="group border rounded-md overflow-hidden transition-none  open:shadow-md">
                       <summary className="flex items-center justify-between p-6 cursor-pointer font-bold bg-white hover:bg-slate-50 transition-colors">
                         {faq.q}
-                        <HelpCircle className="w-5 h-5 text-muted-foreground group-open:rotate-180 transition-transform" />
+                        <HelpCircle className="w-5 h-5 text-muted-foreground group-open:rotate-180 " />
                       </summary>
-                      <div className="p-6 pt-0 text-sm text-muted-foreground leading-relaxed animate-in fade-in slide-in-from-top-2">
+                      <div className="p-6 pt-0 text-sm text-muted-foreground leading-relaxed ">
                         {faq.a}
                       </div>
                    </details>
