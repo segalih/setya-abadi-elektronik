@@ -2,8 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install git and pnpm
+RUN apk add --no-cache git && npm install -g pnpm
 
 # Copy package files
 COPY apps/notification-service/package.json ./
