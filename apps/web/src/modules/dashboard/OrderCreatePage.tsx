@@ -1,22 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, Layers, Maximize, Box, Upload, Info, CheckCircle2, ChevronRight, ChevronLeft, Loader2, AlertTriangle, FileText } from 'lucide-react';
+import { Cpu, Layers, Upload, Info, ChevronRight, ChevronLeft, Loader2, AlertTriangle, FileText, PenTool, Wrench, MapPin, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import MotionPage, { revealUp } from '@/components/shared/MotionWrapper';
+import MotionPage from '@/components/shared/MotionWrapper';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
+import { useAuthStore } from '@/store/authStore';
+import { Textarea } from '@/components/ui/textarea';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { FileUpload } from '@/components/ui/file-upload';
 
 export default function OrderCreatePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const actualUser = (user as any)?.user || user;
+
   const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [pricingParams, setPricingParams] = useState<any>(null);
+  const [productType, setProductType] = useState<'pcb_print' | 'design' | 'assembly'>('pcb_print');
   
   const [form, setForm] = useState({
+    // PCB Print
     width: 10,
     height: 10,
     quantity: 5,
@@ -25,9 +34,13 @@ export default function OrderCreatePage() {
     masking_color: 'green',
     silkscreen: 'yes',
     silkscreen_color: 'white',
-    shape: 'kotak',
-    file: null as File | null,
-    notes: ''
+    // Design
+    design_description: '',
+    // Assembly
+    component_count: 50,
+    // Shared
+    notes: '',
+    file: null as File | null
   });
 
   useEffect(() => {
@@ -43,286 +56,368 @@ export default function OrderCreatePage() {
   }, []);
 
   const calculatePrice = () => {
+    if (productType === 'design' || productType === 'assembly') return 0; // TBD by admin
     if (!pricingParams) return 0;
+
     const area = form.width * form.height;
     const basePricePerCm = form.layers === 'single' ? pricingParams.single_layer_price : pricingParams.double_layer_price;
     let baseTotal = area * basePricePerCm;
     let extras = 0;
+
     if (form.masking_color !== 'none') extras += baseTotal * (pricingParams.soldermask_percent / 100);
     if (form.silkscreen === 'yes') extras += baseTotal * (pricingParams.silkscreen_percent / 100);
+
     return Math.round((baseTotal + extras) * form.quantity);
   };
 
   const estimatedPrice = calculatePrice();
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File terlalu besar (max 5MB)');
-        return;
-      }
-      setForm({ ...form, file });
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!form.file) {
-      alert('Silakan upload file desain PCB (ZIP/PDF)');
-      return;
-    }
-
-    setIsLoading(true);
-    const formData = new FormData();
-    formData.append('product_type', 'PCB');
-    formData.append('total_price', estimatedPrice.toString());
-    formData.append('notes', form.notes);
-    formData.append('details[width]', form.width.toString());
-    formData.append('details[height]', form.height.toString());
-    formData.append('details[quantity]', form.quantity.toString());
-    formData.append('details[layers]', form.layers);
-    formData.append('details[material]', form.material);
-    formData.append('details[masking_color]', form.masking_color);
-    formData.append('details[silkscreen]', form.silkscreen);
-    formData.append('details[silkscreen_color]', form.silkscreen_color);
-    formData.append('file', form.file);
-
-    try {
+  const { mutate: submitOrder, isPending: isLoading } = useMutation({
+    mutationFn: async (formData: FormData) => {
       const resp = await api.post('/orders', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      navigate(`/dashboard`);
-    } catch (error: any) {
+      return resp.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      alert('Pesanan berhasil dibuat!');
+      navigate('/dashboard');
+    },
+    onError: (error: any) => {
       alert(error.response?.data?.message || 'Gagal membuat pesanan');
-    } finally {
-      setIsLoading(false);
     }
+  });
+
+  const handleSubmit = () => {
+    if ((productType === 'pcb_print' || productType === 'design') && !form.file) {
+      alert('Silakan upload file yang dibutuhkan terlebih dahulu!');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('product_type', productType);
+    formData.append('total_price', estimatedPrice.toString());
+    formData.append('notes', form.notes);
+
+    if (productType === 'pcb_print') {
+      formData.append('details[width]', form.width.toString());
+      formData.append('details[height]', form.height.toString());
+      formData.append('details[quantity]', form.quantity.toString());
+      formData.append('details[layers]', form.layers);
+      formData.append('details[material]', form.material);
+      formData.append('details[masking_color]', form.masking_color);
+      formData.append('details[silkscreen]', form.silkscreen);
+      formData.append('details[silkscreen_color]', form.silkscreen_color);
+    } else if (productType === 'design') {
+      formData.append('details[description]', form.design_description);
+    } else if (productType === 'assembly') {
+      formData.append('details[component_count]', form.component_count.toString());
+    }
+
+    if (form.file) {
+      formData.append('file', form.file);
+    }
+
+    submitOrder(formData);
   };
 
   return (
     <MotionPage>
-      <div className="min-h-screen bg-slate-50 py-12 px-6 pcb-grid relative overflow-hidden">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 pcb-grid relative overflow-hidden">
+        <div className="max-w-5xl mx-auto space-y-8">
+
           {/* Header & Steps */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="flex flex-col items-center justify-center text-center gap-8 mb-10">
             <div>
-              <h1 className="text-3xl font-black">Konfigurasi PCB</h1>
-              <p className="text-muted-foreground font-medium">Lengkapi spesifikasi board Anda untuk mendapatkan estimasi harga.</p>
+              <h1 className="text-3xl font-black">Buat Pesanan Baru</h1>
+              <p className="text-muted-foreground font-medium mt-2">Pilih layanan dan lengkapi spesifikasi pesanan Anda.</p>
             </div>
-            <div className="flex items-center gap-2">
+            
+            {/* Centered & Widened Progress Bar */}
+            <div className="flex items-center justify-center w-full max-w-md mx-auto">
               {[1, 2, 3].map((s) => (
-                <div key={s} className="flex items-center">
+                <div key={s} className="flex items-center flex-1 last:flex-none">
                   <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all",
-                    step >= s ? "bg-primary text-white shadow-lg" : "bg-slate-200 text-slate-400"
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all shrink-0",
+                    step >= s ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-slate-200 text-slate-400"
                   )}>
                     {s}
                   </div>
-                  {s < 3 && <div className={cn("w-8 h-0.5 mx-1", step > s ? "bg-primary" : "bg-slate-200")} />}
+                  {s < 3 && (
+                    <div className="flex-1 px-2">
+                       <div className={cn("h-1.5 w-full rounded-full transition-colors duration-300", step > s ? "bg-primary" : "bg-slate-200")} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
-             <div className="lg:col-span-2">
+          <div className={cn(
+            "items-start transition-all duration-500",
+            step === 1 ? "max-w-4xl mx-auto" : "grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
+          )}>
+             <div className={cn(step === 1 ? "" : "lg:col-span-2")}>
                 <AnimatePresence mode="wait">
+
+                {/* STEP 1: PILIH LAYANAN */}
                   {step === 1 && (
-                    <motion.div 
-                      key="step1" 
-                      initial={{ opacity: 0, x: -20 }} 
-                      animate={{ opacity: 1, x: 0 }} 
-                      exit={{ opacity: 0, x: 20 }}
-                      className="space-y-6"
-                    >
-                      <Card className="border-slate-100 shadow-sm">
-                        <CardHeader>
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <Layers className="w-5 h-5 text-primary" />
-                            Dimensi & Kuantitas
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid grid-cols-2 gap-6">
-                           <div className="space-y-2">
-                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Panjang (cm)</label>
-                             <Input type="number" value={form.width} onChange={(e) => setForm({...form, width: Number(e.target.value)})} min={1} />
-                           </div>
-                           <div className="space-y-2">
-                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lebar (cm)</label>
-                             <Input type="number" value={form.height} onChange={(e) => setForm({...form, height: Number(e.target.value)})} min={1} />
-                           </div>
-                           <div className="space-y-2 col-span-2">
-                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Kuantitas (pcs)</label>
-                             <Input type="number" value={form.quantity} onChange={(e) => setForm({...form, quantity: Number(e.target.value)})} min={5} />
-                             <p className="text-[10px] text-muted-foreground">Minimum order 5 keping untuk pengerjaan prototyping.</p>
-                           </div>
+                  <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <Card
+                        className={cn("cursor-pointer transition-all hover:border-primary/50 relative overflow-hidden", productType === 'pcb_print' ? "border-primary ring-1 ring-primary shadow-md" : "")}
+                        onClick={() => setProductType('pcb_print')}
+                      >
+                        <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+                          <div className={cn("p-4 rounded-2xl", productType === 'pcb_print' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
+                            <Cpu className="w-8 h-8" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-slate-800">PCB Print</h3>
+                            <p className="text-xs text-muted-foreground mt-1">Cetak prototype 1-10 pcs layer tunggal atau ganda</p>
+                          </div>
                         </CardContent>
+                        {productType === 'pcb_print' && <div className="absolute top-3 right-3"><CheckCircle2 className="w-5 h-5 text-primary" /></div>}
                       </Card>
 
-                      <Card className="border-slate-100 shadow-sm">
-                        <CardHeader>
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <Cpu className="w-5 h-5 text-secondary" />
-                            Spesifikasi Teknis
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                           <div className="space-y-3">
+                      <Card
+                        className={cn("cursor-pointer transition-all hover:border-primary/50 relative overflow-hidden", productType === 'design' ? "border-primary ring-1 ring-primary shadow-md" : "")}
+                        onClick={() => setProductType('design')}
+                      >
+                        <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+                          <div className={cn("p-4 rounded-2xl", productType === 'design' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
+                            <PenTool className="w-8 h-8" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-slate-800">Custom Design</h3>
+                            <p className="text-xs text-muted-foreground mt-1">Skema diagram dari ide Anda menjadi desain layout</p>
+                          </div>
+                        </CardContent>
+                        {productType === 'design' && <div className="absolute top-3 right-3"><CheckCircle2 className="w-5 h-5 text-primary" /></div>}
+                      </Card>
+
+                      <Card
+                        className={cn("cursor-pointer transition-all hover:border-primary/50 relative overflow-hidden", productType === 'assembly' ? "border-primary ring-1 ring-primary shadow-md" : "")}
+                        onClick={() => setProductType('assembly')}
+                      >
+                        <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+                          <div className={cn("p-4 rounded-2xl", productType === 'assembly' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
+                            <Wrench className="w-8 h-8" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-slate-800">PCB Assembly</h3>
+                            <p className="text-xs text-muted-foreground mt-1">Solder manual komponen untuk pesanan low volume</p>
+                          </div>
+                        </CardContent>
+                        {productType === 'assembly' && <div className="absolute top-3 right-3"><CheckCircle2 className="w-5 h-5 text-primary" /></div>}
+                      </Card>
+                    </div>
+
+                    <div className="flex justify-end mt-8">
+                      <Button size="lg" className="h-12 px-8" onClick={() => setStep(2)}>
+                        Lanjut: Detail Spesifikasi
+                        <ChevronRight className="ml-2 w-5 h-5" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* STEP 2: SPESIFIKASI DINAMIS */}
+                {step === 2 && (
+                  <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
+
+                    {/* Form PCB Print */}
+                    {productType === 'pcb_print' && (
+                      <>
+                        <Card className="border-slate-200 shadow-sm">
+                          <CardHeader className="bg-slate-50/50 border-b">
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <Layers className="w-5 h-5 text-primary" /> Array & Dimensi
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="grid grid-cols-2 gap-6 pt-6">
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Panjang (cm)</label>
+                              <Input type="number" value={form.width} onChange={(e) => setForm({ ...form, width: Number(e.target.value) })} min={1} />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lebar (cm)</label>
+                              <Input type="number" value={form.height} onChange={(e) => setForm({ ...form, height: Number(e.target.value) })} min={1} />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Kuantitas (pcs)</label>
+                              <Input type="number" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} min={1} />
+                            </div>
+                            <div className="space-y-3 col-span-2">
                               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Layer</label>
                               <div className="grid grid-cols-2 gap-4">
-                                 {['single', 'double'].map(l => (
-                                   <button 
-                                     key={l}
-                                     onClick={() => setForm({...form, layers: l})}
-                                     className={cn(
-                                       "py-3 rounded-xl border-2 font-bold transition-all",
-                                       form.layers === l ? "border-primary bg-primary/5 text-primary" : "border-slate-100 bg-white hover:border-slate-200"
-                                     )}
-                                   >
-                                     {l.toUpperCase()} LAYER
-                                   </button>
-                                 ))}
+                                {['single', 'double'].map(l => (
+                                  <button key={l} onClick={() => setForm({ ...form, layers: l })} className={cn(
+                                    "py-3 rounded-xl border-2 font-bold transition-all",
+                                    form.layers === l ? "border-primary bg-primary/5 text-primary" : "border-slate-200 bg-white hover:border-slate-300"
+                                  )}>
+                                    {l.toUpperCase()} LAYER
+                                  </button>
+                                ))}
                               </div>
-                           </div>
-                           <div className="grid grid-cols-2 gap-6 text-sm">
-                              <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Material</label>
-                                <select className="w-full h-11 px-3 border rounded-xl bg-white" value={form.material} onChange={e => setForm({...form, material: e.target.value})}>
-                                  <option value="FR4">FR4 (Standard)</option>
-                                  <option value="Aluminum">Aluminum</option>
-                                  <option value="CEM-3">CEM-3</option>
-                                </select>
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Masking Color</label>
-                                <select className="w-full h-11 px-3 border rounded-xl bg-white" value={form.masking_color} onChange={e => setForm({...form, masking_color: e.target.value})}>
-                                  <option value="green">Hijau (Standard)</option>
-                                  <option value="blue">Biru</option>
-                                  <option value="red">Merah</option>
-                                  <option value="black">Hitam</option>
-                                  <option value="white">Putih</option>
-                                </select>
-                              </div>
-                           </div>
-                        </CardContent>
-                      </Card>
-                      
-                      <div className="flex justify-end">
-                        <Button size="lg" onClick={() => setStep(2)}>
-                          Lanjut: Upload File
-                          <ChevronRight className="ml-2 w-5 h-5" />
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
+                            </div>
+                          </CardContent>
+                        </Card>
 
-                  {step === 2 && (
-                    <motion.div 
-                      key="step2" 
-                      initial={{ opacity: 0, x: -20 }} 
-                      animate={{ opacity: 1, x: 0 }} 
-                      exit={{ opacity: 0, x: 20 }}
-                      className="space-y-6"
-                    >
-                      <Card className="border-slate-100 shadow-sm overflow-hidden">
-                        <CardHeader className="bg-slate-50 border-b">
-                           <CardTitle className="text-lg flex items-center gap-2">
-                             <Upload className="w-5 h-5 text-primary" />
-                             Kirim File Desain
-                           </CardTitle>
+                        <Card className="border-slate-200 shadow-sm overflow-hidden mt-6">
+                          <CardHeader className="bg-slate-50 border-b">
+                             <CardTitle className="text-base flex items-center gap-2">
+                               <Upload className="w-5 h-5 text-primary" /> Upload PCB Design (Gerber)
+                             </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-8">
+                             <FileUpload 
+                               value={form.file} 
+                               onChange={(f) => setForm({...form, file: f})} 
+                               accept=".zip,.rar" 
+                               maxSizeMB={5} 
+                             />
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
+
+                    {/* Form Design */}
+                    {productType === 'design' && (
+                      <Card className="border-slate-200 shadow-sm">
+                        <CardHeader className="bg-slate-50/50 border-b">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <PenTool className="w-5 h-5 text-primary" /> Setup Kebutuhan Desain
+                          </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-8">
-                           <div className="border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center bg-slate-50/50 hover:bg-primary/5 hover:border-primary/40 transition-all group relative">
-                              <input 
-                                type="file" 
-                                className="absolute inset-0 opacity-0 cursor-pointer" 
-                                onChange={handleFileUpload} 
-                                accept=".zip,.pdf,.rar"
-                              />
-                              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                                 <Upload className="w-8 h-8 text-primary" />
+                        <CardContent className="space-y-6 pt-6">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Deskripsi & Skema Fungsi</label>
+                            <Textarea className="min-h-[150px] resize-none" placeholder="Jelaskan kebutuhan fungsionalitas dan pin-pin komponen..." value={form.design_description} onChange={(e: any) => setForm({ ...form, design_description: e.target.value })} />
                               </div>
-                              <h4 className="font-bold text-lg mb-2">{form.file ? form.file.name : 'Pilih File Gerber / Design'}</h4>
-                              <p className="text-sm text-muted-foreground">Format: ZIP, PDF, RAR (Maks. 5MB)</p>
-                           </div>
-                           
-                           <div className="mt-8 flex items-start gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 text-xs">
-                              <AlertTriangle className="w-5 h-5 shrink-0" />
-                              <div>
-                                 <p className="font-bold">Perhatikan Design Rules:</p>
-                                 <p className="font-medium mt-1">Pastikan clearance minimal 6mil dan hole size minimal 0.3mm untuk menghindari kegagalan pengerjaan.</p>
-                              </div>
-                           </div>
+                          <div className="space-y-4">
+                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">Upload Referensi Skematik (PDF / Gambar)</label>
+                             <FileUpload 
+                               value={form.file} 
+                               onChange={(f) => setForm({...form, file: f})} 
+                               accept=".pdf,.png,.jpg,.jpeg,.zip" 
+                               maxSizeMB={5} 
+                             />
+                          </div>
                         </CardContent>
                       </Card>
+                    )}
 
-                      <div className="flex justify-between">
-                        <Button variant="ghost" onClick={() => setStep(1)}>
+                    {/* Form Assembly */}
+                    {productType === 'assembly' && (
+                      <Card className="border-slate-200 shadow-sm">
+                        <CardHeader className="bg-slate-50/50 border-b">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Wrench className="w-5 h-5 text-primary" /> Setup Perakitan (Manual Soldering)
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6 pt-6">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Estimasi Jumlah Komponen per Board</label>
+                            <Input type="number" min={1} value={form.component_count} onChange={(e) => setForm({ ...form, component_count: Number(e.target.value) })} />
+                              </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Catatan Assembly (BOM lists)</label>
+                            <Textarea className="min-h-[150px]" placeholder="Sebutkan catatan perakitan, komponen SMD/THT, dll..." value={form.notes} onChange={(e: any) => setForm({ ...form, notes: e.target.value })} />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    <div className="flex justify-between mt-8">
+                      <Button variant="outline" className="h-12 px-6 border-slate-300" onClick={() => setStep(1)}>
                           <ChevronLeft className="mr-2 w-5 h-5" />
                           Kembali
                         </Button>
-                        <Button size="lg" onClick={() => setStep(3)} disabled={!form.file}>
-                          Lanjut: Konfirmasi
+                      <Button size="lg" className="h-12 px-8" onClick={() => {
+                        if ((productType === 'pcb_print' || productType === 'design') && !form.file) {
+                          alert('File upload bersifat mandatory. Silakan upload file Gerber atau Referensi Anda terlebih dahulu!');
+                          return;
+                        }
+                        setStep(3);
+                      }}>
+                        Lanjut: Review Order
                           <ChevronRight className="ml-2 w-5 h-5" />
                         </Button>
                       </div>
                     </motion.div>
                   )}
 
+                {/* STEP 3: REVIEW ORDER */}
                   {step === 3 && (
-                    <motion.div 
-                      key="step3" 
-                      initial={{ opacity: 0, x: -20 }} 
-                      animate={{ opacity: 1, x: 0 }} 
-                      exit={{ opacity: 0, x: 20 }}
-                      className="space-y-6"
-                    >
-                       <Card className="border-slate-100 shadow-sm">
-                         <CardHeader>
-                            <CardTitle className="text-lg">Ringkasan Spesifikasi</CardTitle>
-                         </CardHeader>
-                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm font-medium">
-                               <div className="p-4 rounded-2xl bg-slate-50 flex justify-between">
-                                  <span className="text-muted-foreground">Ukuran:</span>
-                                  <span className="font-black">{form.width}x{form.height} cm</span>
-                               </div>
-                               <div className="p-4 rounded-2xl bg-slate-50 flex justify-between">
-                                  <span className="text-muted-foreground">Kuantitas:</span>
-                                  <span className="font-black">{form.quantity} pcs</span>
-                               </div>
-                               <div className="p-4 rounded-2xl bg-slate-50 flex justify-between">
-                                  <span className="text-muted-foreground">Layer:</span>
-                                  <span className="font-black capitalize">{form.layers} Layer</span>
-                               </div>
-                               <div className="p-4 rounded-2xl bg-slate-50 flex justify-between">
-                                  <span className="text-muted-foreground">Masking:</span>
-                                  <span className="font-black capitalize">{form.masking_color}</span>
-                               </div>
+                  <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
+                    <Card className="border-slate-200 shadow-sm overflow-hidden">
+                      <div className="bg-primary p-6 text-white flex justify-between items-center">
+                        <div>
+                          <h3 className="font-black text-xl">Review Pesanan</h3>
+                          <p className="text-primary-foreground/80 text-sm font-medium mt-1">
+                            {productType === 'pcb_print' ? 'Cetak Prototype PCB' : productType === 'design' ? 'Jasa Custom Design' : 'Jasa Manual Assembly'}
+                          </p>
+                        </div>
+                      </div>
+                      <CardContent className="p-0">
+
+                        {/* Alamat Pengiriman Section */}
+                        <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 flex items-center gap-2 mb-4">
+                            <MapPin className="w-4 h-4 text-primary" /> Alamat Pengiriman
+                          </h4>
+                          {actualUser?.address ? (
+                            <div className="text-sm font-medium text-slate-600 bg-white p-4 rounded-xl border border-slate-200">
+                              <p className="font-bold text-slate-800 mb-1">{actualUser.name}</p>
+                              <p>{actualUser.address.full_address}</p>
+                              <p>{actualUser.address.village}, {actualUser.address.district}</p>
+                              <p>{actualUser.address.city}, {actualUser.address.province} - {actualUser.address.postal_code}</p>
+                              <p className="mt-2 text-primary">Telp: {actualUser.address.phone}</p>
                             </div>
-                            
-                            <div className="p-4 border rounded-2xl flex items-center justify-between">
-                               <div className="flex items-center gap-3">
-                                  <FileText className="w-5 h-5 text-primary" />
-                                  <span className="text-xs font-bold truncate max-w-[200px]">{form.file?.name}</span>
-                               </div>
-                               <Badge variant="outline">Verified</Badge>
+                          ) : (
+                            <div className="p-4 bg-amber-50 text-amber-700 rounded-xl text-sm font-bold border border-amber-200 flex items-start gap-2">
+                              <AlertTriangle className="w-5 h-5 shrink-0" />
+                              Bapak/Ibu belum mengatur alamat pengiriman secara konkrit. Silakan atur di Profil untuk estimasi kurir pengiriman.
                             </div>
-                            
-                            <div className="space-y-2 pt-4">
-                               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Catatan Tambahan</label>
-                               <Input placeholder="Berikan instruksi khusus jika ada..." value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} />
+                          )}
+                            </div>
+
+                        {/* Detail Spesifikasi */}
+                        <div className="p-6 border-b border-slate-100">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 mb-4">Detail Produk</h4>
+                          {productType === 'pcb_print' && (
+                            <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-200">
+                              <div><span className="text-muted-foreground block text-xs">Dimensi</span><span className="font-bold">{form.width}x{form.height} cm</span></div>
+                              <div><span className="text-muted-foreground block text-xs">Kuantitas</span><span className="font-bold">{form.quantity} pcs</span></div>
+                              <div><span className="text-muted-foreground block text-xs">Layer</span><span className="font-bold capitalize">{form.layers} Layer</span></div>
+                              <div><span className="text-muted-foreground block text-xs">Masking</span><span className="font-bold capitalize">{form.masking_color}</span></div>
+                            </div>
+                          )}
+                          {productType === 'design' && (
+                            <div className="text-sm bg-slate-50 p-4 rounded-xl border border-slate-200">
+                              <span className="text-muted-foreground block text-xs mb-1">Deskripsi</span>
+                              <p className="font-medium">{form.design_description || '-'}</p>
+                            </div>
+                          )}
+                          {productType === 'assembly' && (
+                            <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-200">
+                              <div><span className="text-muted-foreground block text-xs">Kuantitas Komponen</span><span className="font-bold">{form.component_count} pcs/board</span></div>
+                              <div className="col-span-2"><span className="text-muted-foreground block text-xs">Catatan BOM</span><p className="font-medium">{form.notes || '-'}</p></div>
+                            </div>
+                          )}
                             </div>
                          </CardContent>
                        </Card>
 
                        <div className="flex justify-between">
-                        <Button variant="ghost" onClick={() => setStep(2)}>
+                      <Button variant="outline" className="h-12 px-6 border-slate-300" onClick={() => setStep(2)}>
                           <ChevronLeft className="mr-2 w-5 h-5" />
                           Kembali
                         </Button>
-                        <Button size="lg" onClick={handleSubmit} disabled={isLoading} className="bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20">
-                          {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Kirim Pesanan Sekarang'}
+                      <Button size="lg" onClick={handleSubmit} disabled={isLoading} className="h-12 px-8 bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20">
+                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Selesai & Buat Order'}
                         </Button>
                       </div>
                     </motion.div>
@@ -331,40 +426,40 @@ export default function OrderCreatePage() {
              </div>
 
              {/* Pricing Sidebar */}
-             <div className="lg:sticky top-24">
-                <Card className="border-none bg-primary text-white overflow-hidden shadow-2xl shadow-primary/30">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16" />
-                   <CardHeader className="relative z-10">
-                      <CardTitle className="text-primary-foreground/80 text-xs font-black uppercase tracking-widest">Estimasi Biaya</CardTitle>
-                   </CardHeader>
-                   <CardContent className="relative z-10 pt-0">
-                      <div className="text-4xl font-black mb-1">Rp {estimatedPrice.toLocaleString('id-ID')}</div>
-                      <p className="text-[10px] text-primary-foreground font-bold opacity-80 uppercase tracking-tighter">
-                         *Harga final akan dikonfirmasi admin setelah tinjau file.
-                      </p>
-                      
-                      <div className="mt-8 pt-8 border-t border-white/20 space-y-4">
-                         <div className="flex justify-between text-sm">
-                            <span className="opacity-80">Base Price:</span>
-                            <span className="font-bold">Rp {((estimatedPrice / form.quantity) * 0.8).toLocaleString('id-ID')}</span>
-                         </div>
-                         <div className="flex justify-between text-sm">
-                            <span className="opacity-80">Extras (Finish):</span>
-                            <span className="font-bold">Rp {((estimatedPrice / form.quantity) * 0.2).toLocaleString('id-ID')}</span>
-                         </div>
-                      </div>
-                   </CardContent>
+             {step >= 2 && (
+               <div className="lg:sticky top-24 animate-in fade-in slide-in-from-right-4 duration-500">
+                <Card className="border-none bg-[#1e293b] text-white overflow-hidden shadow-2xl shadow-slate-900/10">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-16 -mt-16" />
+                  <CardHeader className="relative z-10 border-b border-white/10 pb-4">
+                    <CardTitle className="text-slate-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                      Estimasi Biaya <Badge className="bg-primary/20 text-primary hover:bg-primary/20 ml-auto border-none">Draft</Badge>
+                    </CardTitle>
+                     </CardHeader>
+                  <CardContent className="relative z-10 pt-6">
+                    <div className="text-4xl font-black mb-1">
+                      {productType === 'pcb_print' ? `Rp ${estimatedPrice.toLocaleString('id-ID')}` : 'Rp 0'}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">
+                      {productType === 'pcb_print'
+                        ? '*Harga belum termasuk ongkos kirim. Nilai mutlak akan dikonfirmasi admin setelah cek DFM Gerber.'
+                        : '*Harga jasa desain & perakitan membutuhkan tinjauan manual dari Engineer kami sebelum deal.'}
+                        </p>
+                        
+                    <div className="mt-8 p-4 rounded-xl bg-white/5 space-y-3">
+                      <h4 className="text-xs font-black text-white flex items-center gap-2">
+                        <Info className="w-4 h-4 text-primary" />
+                        Alur Setelah Ini
+                      </h4>
+                      <ul className="space-y-2 text-xs text-slate-300 font-medium">
+                        <li>1. Order masuk ke status <strong className="text-white">PENDING</strong></li>
+                        <li>2. Admin Setya Abadi me-review spesifikasi</li>
+                        <li>3. Tagihan dirilis jika dokumen valid</li>
+                      </ul>
+                    </div>
+                  </CardContent>
                 </Card>
-                
-                <div className="mt-8 p-6 rounded-3xl bg-white border shadow-sm space-y-4">
-                   <h4 className="text-sm font-black flex items-center gap-2">
-                      <Info className="w-4 h-4 text-primary" />
-                      Butuh Bantuan?
-                   </h4>
-                   <p className="text-xs text-muted-foreground leading-relaxed font-medium">Bicara langsung dengan admin teknis kami untuk spesifikasi kustom atau pengerjaan kilat.</p>
-                   <Button variant="outline" className="w-full text-xs font-bold border-2">Hubungi Tim Teknis</Button>
-                </div>
-             </div>
+               </div>
+             )}
           </div>
         </div>
       </div>

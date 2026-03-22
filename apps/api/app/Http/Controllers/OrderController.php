@@ -92,14 +92,15 @@ class OrderController extends Controller
                 $orderId = $order->id;
                 $timestamp = time();
                 $filename = $file->getClientOriginalName();
+                $uuid = Str::uuid();
                 $productTypeSlug = strtolower(str_replace(' ', '_', $request->product_type));
 
-                $path = "{$productTypeSlug}/{$userId}/{$orderId}/{$timestamp}_{$orderId}_{$filename}";
+                $path = "{$productTypeSlug}/{$userId}/{$orderId}/{$timestamp}_{$uuid}_{$filename}";
 
                 Storage::disk('public')->putFileAs(
                     "{$productTypeSlug}/{$userId}/{$orderId}",
                     $file,
-                    "{$timestamp}_{$orderId}_{$filename}"
+                    "{$timestamp}_{$uuid}_{$filename}"
                 );
 
                 $details['file_path'] = $path;

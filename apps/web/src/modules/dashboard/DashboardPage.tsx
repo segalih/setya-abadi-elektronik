@@ -10,44 +10,31 @@ import { authService } from '@/services/auth.service';
 import api from '@/services/api';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
 
 export default function DashboardPage() {
   const { user, logout } = useAuthStore();
-  const [orders, setOrders] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   // Fallback for corrupted localstorage where user is nested
   const actualUser = (user as any)?.user || user;
   const roleName = typeof actualUser?.role === 'string' ? actualUser.role : actualUser?.role?.name;
+
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ['orders'],
+    queryFn: async () => {
+      const res = await api.get('/orders');
+      return res.data?.data || res.data || [];
+    },
+    refetchInterval: 10000 // 10 seconds polling
+  });
 
   useEffect(() => {
     if (roleName && ['admin', 'supervisor', 'staff'].includes(roleName)) {
       navigate('/backoffice', { replace: true });
     }
-
-    const fetchData = async () => {
-      try {
-        const [ordersResp] = await Promise.all([
-          api.get('/orders'),
-        ]);
-        setOrders(ordersResp.data.data || []);
-      } catch (err) {
-        console.error('Failed to fetch dashboard data', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-
-    // Mock Notification Polling
-    const interval = setInterval(() => {
-      // logic to fetch notifications if endpoint exists
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [roleName, navigate]);
 
   return (
     <MotionPage>
@@ -74,7 +61,7 @@ export default function DashboardPage() {
           </div>
 
           <nav className="space-y-2 flex-1">
-            <Button variant="default" className="w-full justify-start gap-3 rounded-xl h-12">
+            <Button variant="default" className="w-full justify-start gap-3 rounded-xl h-12" onClick={() => navigate('/dashboard')}>
               <LayoutDashboard className="w-5 h-5" />
               Dashboard
             </Button>
@@ -82,6 +69,16 @@ export default function DashboardPage() {
               <Package className="w-5 h-5" />
               Riwayat Order
             </Button>
+            
+            <div className="pt-4 mt-4 border-t border-slate-100">
+               <Button 
+                 onClick={() => navigate('/order/create')}
+                 className="w-full justify-center gap-2 rounded-xl h-12 bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20"
+               >
+                 <Package className="w-5 h-5" />
+                 Buat Pesanan Baru
+               </Button>
+            </div>
           </nav>
 
           <div className="mt-10 pt-6 border-t border-slate-200">
@@ -153,7 +150,7 @@ export default function DashboardPage() {
                           </tr>
                         </thead>
                         <tbody className="text-sm">
-                          {orders.map((order, i) => (
+                          {orders.map((order: any, i: number) => (
                             <tr key={i} className="border-b last:border-0 hover:bg-slate-50/50 transition-colors">
                               <td className="p-4 font-bold">#{order.order_number}</td>
                               <td className="p-4">{order.product_type}</td>
@@ -174,7 +171,7 @@ export default function DashboardPage() {
                     <div className="p-16 text-center">
                       <Package className="w-12 h-12 text-slate-200 mx-auto mb-4" />
                       <p className="text-sm text-muted-foreground font-medium">Belum ada pesanan aktif.</p>
-                      <Button className="mt-6 font-bold" variant="outline">Mulai Buat Order</Button>
+                      <Button className="mt-6 font-bold" variant="outline" onClick={() => navigate('/order/create')}>Mulai Buat Order</Button>
                     </div>
                   )}
                 </CardContent>
