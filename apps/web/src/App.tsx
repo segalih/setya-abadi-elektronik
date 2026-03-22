@@ -7,6 +7,7 @@ import OrderCreatePage from '@/modules/dashboard/OrderCreatePage';
 import BackofficeLayout from '@/layouts/BackofficeLayout';
 import BackofficeDashboard from '@/modules/dashboard/BackofficeDashboard';
 import BackofficeOrders from '@/modules/dashboard/BackofficeOrders';
+import BackofficeOrderDetail from '@/modules/dashboard/BackofficeOrderDetail';
 import BackofficeCustomers from '@/modules/dashboard/BackofficeCustomers';
 import BackofficeParameters from '@/modules/dashboard/BackofficeParameters';
 import BackofficeUsers from '@/modules/dashboard/BackofficeUsers';
@@ -73,6 +74,7 @@ function App() {
           >
             <Route index element={<BackofficeDashboard />} />
             <Route path="orders" element={<BackofficeOrders />} />
+            <Route path="orders/:id" element={<BackofficeOrderDetail />} />
             <Route path="customers" element={<BackofficeCustomers />} />
             <Route path="audit" element={<BackofficeAudit />} />
             <Route path="parameters" element={<BackofficeParameters />} />

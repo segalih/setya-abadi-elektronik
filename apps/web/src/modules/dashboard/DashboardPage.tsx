@@ -11,6 +11,25 @@ import api from '@/services/api';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function DashboardPage() {
   const { user, logout } = useAuthStore();
@@ -119,13 +138,51 @@ export default function DashboardPage() {
                 <Bell className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
                 <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full ring-2 ring-white" />
               </div>
-              <div className="hidden sm:flex flex-col items-end">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sesi Aktif</span>
-                <span className="text-xs font-bold text-emerald-500 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Sistem Online
-                </span>
-              </div>
+
+              <div className="h-8 w-px bg-slate-200 hidden sm:block" />
+
+              <AlertDialog>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-3 cursor-pointer group">
+                      <div className="hidden sm:flex flex-col items-end">
+                        <span className="text-xs font-black truncate max-w-[100px]">{actualUser?.name || 'User'}</span>
+                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{roleName || 'User'}</span>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                        {actualUser?.name?.charAt(0) || 'U'}
+                      </div>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2 p-2 rounded-2xl border-slate-100 shadow-xl">
+                    <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-3 py-2">Akun Saya</DropdownMenuLabel>
+                    <DropdownMenuItem className="rounded-xl cursor-pointer py-3 gap-3" onClick={() => navigate('/profile')}>
+                      <UserIcon className="w-4 h-4 text-slate-400" />
+                      <span className="font-bold text-sm">Pengaturan Profil</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="my-2 bg-slate-50" />
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem className="rounded-xl cursor-pointer py-3 gap-3 text-red-500 focus:bg-red-50 focus:text-red-600">
+                        <LogOut className="w-4 h-4" />
+                        <span className="font-bold text-sm">Keluar Sesi</span>
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <AlertDialogContent className="rounded-[2rem] p-8 border-none shadow-2xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-2xl font-black text-slate-800">Konfirmasi Logout</AlertDialogTitle>
+                    <AlertDialogDescription className="text-sm font-medium text-slate-500 mt-2">
+                      Apakah Anda yakin ingin logout? Sesi aktif Anda akan dihentikan dan Anda harus login kembali untuk mengakses fitur ini.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="mt-8 gap-3 sm:gap-0">
+                    <AlertDialogCancel className="rounded-xl border-none bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold h-12 px-6">Batal</AlertDialogCancel>
+                    <AlertDialogAction onClick={logout} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-12 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </header>
 
@@ -202,7 +259,7 @@ export default function DashboardPage() {
                     <CardTitle className="text-base">Butuh Bantuan?</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6">
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-6 font-medium">Admin kami siap membantu konsultasi teknis PCB via WhatsApp.</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-6 font-medium">Jam operasional: Senin - Sabtu, 07.00 - 18.00. Admin kami siap membantu via WhatsApp.</p>
                     <Button className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white border-none font-bold">Chat WhatsApp Admin</Button>
                   </CardContent>
                 </Card>

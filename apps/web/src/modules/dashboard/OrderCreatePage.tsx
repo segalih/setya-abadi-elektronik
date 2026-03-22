@@ -204,35 +204,37 @@ export default function OrderCreatePage() {
                       </Card>
 
                       <Card
-                        className={cn("cursor-pointer transition-none hover:border-primary/50 relative overflow-hidden", productType === 'design' ? "border-primary ring-1 ring-primary shadow-md" : "")}
-                        onClick={() => setProductType('design')}
+                        className={cn("relative overflow-hidden border-slate-200 bg-slate-50/50 opacity-60 cursor-not-allowed group transition-none")}
                       >
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/5 backdrop-blur-[1px]">
+                          <Badge className="bg-slate-800 text-white font-black text-[10px] uppercase tracking-tighter shadow-xl">Coming Soon</Badge>
+                        </div>
                         <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-                          <div className={cn("p-4 rounded-md", productType === 'design' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
+                          <div className="p-4 rounded-md bg-slate-200 text-slate-400">
                             <PenTool className="w-8 h-8" />
                           </div>
                           <div>
-                            <h3 className="font-bold text-slate-800">Custom Design</h3>
-                            <p className="text-xs text-muted-foreground mt-1">Skema diagram dari ide Anda menjadi desain layout</p>
+                            <h3 className="font-bold text-slate-400">Custom Design</h3>
+                            <p className="text-xs text-slate-400 mt-1">Skema diagram dari ide Anda menjadi desain layout</p>
                           </div>
                         </CardContent>
-                        {productType === 'design' && <div className="absolute top-3 right-3"><CheckCircle2 className="w-5 h-5 text-primary" /></div>}
                       </Card>
 
                       <Card
-                        className={cn("cursor-pointer transition-none hover:border-primary/50 relative overflow-hidden", productType === 'assembly' ? "border-primary ring-1 ring-primary shadow-md" : "")}
-                        onClick={() => setProductType('assembly')}
+                        className={cn("relative overflow-hidden border-slate-200 bg-slate-50/50 opacity-60 cursor-not-allowed group transition-none")}
                       >
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/5 backdrop-blur-[1px]">
+                          <Badge className="bg-slate-800 text-white font-black text-[10px] uppercase tracking-tighter shadow-xl">Coming Soon</Badge>
+                        </div>
                         <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-                          <div className={cn("p-4 rounded-md", productType === 'assembly' ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>
+                          <div className="p-4 rounded-md bg-slate-200 text-slate-400">
                             <Wrench className="w-8 h-8" />
                           </div>
                           <div>
-                            <h3 className="font-bold text-slate-800">PCB Assembly</h3>
-                            <p className="text-xs text-muted-foreground mt-1">Solder manual komponen untuk pesanan low volume</p>
+                            <h3 className="font-bold text-slate-400">PCB Assembly</h3>
+                            <p className="text-xs text-slate-400 mt-1">Solder manual komponen untuk pesanan low volume</p>
                           </div>
                         </CardContent>
-                        {productType === 'assembly' && <div className="absolute top-3 right-3"><CheckCircle2 className="w-5 h-5 text-primary" /></div>}
                       </Card>
                     </div>
 

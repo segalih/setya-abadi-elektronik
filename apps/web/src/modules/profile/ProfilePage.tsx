@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/services/api';
+import { cn } from '@/lib/utils';
 import MotionPage from '@/components/shared/MotionWrapper';
+import { Badge } from '@/components/ui/badge';
 
 // --- ZOD SCHEMAS ---
 const profileSchema = z.object({
@@ -133,10 +135,27 @@ export default function ProfilePage() {
             <CardContent className="pt-6">
               <form onSubmit={profileForm.handleSubmit((data) => updateProfile(data))} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700">Nama Lengkap</label>
-                  <Input {...profileForm.register('name')} placeholder="Nama Lengkap" />
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700">Nama Lengkap</label>
+                    {actualUser?.email_verified_at ? (
+                      <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 gap-1 py-0.5 px-2">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">Terverifikasi</span>
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-50 gap-1 py-0.5 px-2">
+                        <Loader2 className="w-3 h-3 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">Belum Terverifikasi</span>
+                      </Badge>
+                    )}
+                  </div>
+                  <Input 
+                    {...profileForm.register('name')} 
+                    placeholder="Nama Lengkap" 
+                    className={cn(profileForm.formState.errors.name && "border-red-500 focus-visible:ring-red-500")}
+                  />
                   {profileForm.formState.errors.name && (
-                    <p className="text-red-500 text-xs mt-1">{profileForm.formState.errors.name.message}</p>
+                    <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider tabular-nums">{profileForm.formState.errors.name.message}</p>
                   )}
                 </div>
 
@@ -165,46 +184,74 @@ export default function ProfilePage() {
               <form onSubmit={addressForm.handleSubmit((data) => updateAddress(data))} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-700">Alamat Lengkap</label>
-                  <Input {...addressForm.register('full_address')} placeholder="Jalan, RT/RW, Patokan area" />
-                  {addressForm.formState.errors.full_address && <p className="text-red-500 text-xs mt-1">{addressForm.formState.errors.full_address.message}</p>}
+                  <Input 
+                    {...addressForm.register('full_address')} 
+                    placeholder="Jalan, RT/RW, Patokan area" 
+                    className={cn(addressForm.formState.errors.full_address && "border-red-500 focus-visible:ring-red-500")}
+                  />
+                  {addressForm.formState.errors.full_address && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{addressForm.formState.errors.full_address.message}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-700">Provinsi</label>
-                    <Input {...addressForm.register('province')} placeholder="Contoh: Jawa Barat" />
-                    {addressForm.formState.errors.province && <p className="text-red-500 text-xs mt-1">{addressForm.formState.errors.province.message}</p>}
+                    <Input 
+                      {...addressForm.register('province')} 
+                      placeholder="Contoh: Jawa Barat" 
+                      className={cn(addressForm.formState.errors.province && "border-red-500 focus-visible:ring-red-500")}
+                    />
+                    {addressForm.formState.errors.province && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{addressForm.formState.errors.province.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-700">Kota/Kota</label>
-                    <Input {...addressForm.register('city')} placeholder="Contoh: Bandung" />
-                    {addressForm.formState.errors.city && <p className="text-red-500 text-xs mt-1">{addressForm.formState.errors.city.message}</p>}
+                    <Input 
+                      {...addressForm.register('city')} 
+                      placeholder="Contoh: Bandung" 
+                      className={cn(addressForm.formState.errors.city && "border-red-500 focus-visible:ring-red-500")}
+                    />
+                    {addressForm.formState.errors.city && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{addressForm.formState.errors.city.message}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-700">Kecamatan</label>
-                    <Input {...addressForm.register('district')} placeholder="Kecamatan" />
-                    {addressForm.formState.errors.district && <p className="text-red-500 text-xs mt-1">{addressForm.formState.errors.district.message}</p>}
+                    <Input 
+                      {...addressForm.register('district')} 
+                      placeholder="Kecamatan" 
+                      className={cn(addressForm.formState.errors.district && "border-red-500 focus-visible:ring-red-500")}
+                    />
+                    {addressForm.formState.errors.district && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{addressForm.formState.errors.district.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-700">Desa/Kelurahan</label>
-                    <Input {...addressForm.register('village')} placeholder="Desa" />
-                    {addressForm.formState.errors.village && <p className="text-red-500 text-xs mt-1">{addressForm.formState.errors.village.message}</p>}
+                    <Input 
+                      {...addressForm.register('village')} 
+                      placeholder="Desa" 
+                      className={cn(addressForm.formState.errors.village && "border-red-500 focus-visible:ring-red-500")}
+                    />
+                    {addressForm.formState.errors.village && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{addressForm.formState.errors.village.message}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-700">Kode Pos</label>
-                    <Input {...addressForm.register('postal_code')} placeholder="12345" />
-                    {addressForm.formState.errors.postal_code && <p className="text-red-500 text-xs mt-1">{addressForm.formState.errors.postal_code.message}</p>}
+                    <Input 
+                      {...addressForm.register('postal_code')} 
+                      placeholder="12345" 
+                      className={cn(addressForm.formState.errors.postal_code && "border-red-500 focus-visible:ring-red-500")}
+                    />
+                    {addressForm.formState.errors.postal_code && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{addressForm.formState.errors.postal_code.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-700">No HP / WhatsApp</label>
-                    <Input {...addressForm.register('phone')} placeholder="08xxxxxxxxxx" />
-                    {addressForm.formState.errors.phone && <p className="text-red-500 text-xs mt-1">{addressForm.formState.errors.phone.message}</p>}
+                    <Input 
+                      {...addressForm.register('phone')} 
+                      placeholder="08xxxxxxxxxx" 
+                      className={cn(addressForm.formState.errors.phone && "border-red-500 focus-visible:ring-red-500")}
+                    />
+                    {addressForm.formState.errors.phone && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{addressForm.formState.errors.phone.message}</p>}
                   </div>
                 </div>
 

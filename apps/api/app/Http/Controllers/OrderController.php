@@ -117,15 +117,8 @@ class OrderController extends Controller
                 'data_json' => $details,
             ]);
 
-            // Notify User (Queued)
-            SendOrderNotification::dispatch(config('services.notification.url') . '/api/notify/order-created', [
-                'order_id' => $order->id,
-                'product_type' => $order->product_type,
-                'total_price' => $order->total_price,
-                'customer_name' => $request->user()->name,
-                'customer_email' => $request->user()->email,
-                'customer_phone' => $request->user()->address->phone ?? null,
-            ]);
+            // Notify User (Asynchronous)
+            app(\App\Services\NotificationService::class)->notifyOrderCreated($order);
 
             return response()->json($order->load('detail'), 201);
         });
@@ -160,15 +153,8 @@ class OrderController extends Controller
             'payment_at' => now(),
         ]);
 
-        // Notify (Queued)
-        SendOrderNotification::dispatch(config('services.notification.url') . '/api/notify/payment-success', [
-            'order_id' => $order->id,
-            'product_type' => $order->product_type,
-            'total_price' => $order->total_price,
-            'customer_name' => $order->user->name,
-            'customer_email' => $order->user->email,
-            'customer_phone' => $order->user->address->phone ?? null,
-        ]);
+        // Notify (Asynchronous)
+        app(\App\Services\NotificationService::class)->notifyPaymentSuccess($order);
 
         return response()->json($order->load('detail'));
     }
@@ -301,19 +287,16 @@ class OrderController extends Controller
             'images' => $imagePaths,
         ]);
 
-        // Notify (Queued)
+        // Notify (Asynchronous)
         $baseUrl = config('app.url') . '/storage/';
         $fullImageUrls = array_map(fn($path) => $baseUrl . $path, $imagePaths);
 
-        SendOrderNotification::dispatch(config('services.notification.url') . '/api/notify/status-updated', [
-            'order_id' => $order->id,
-            'status' => $request->status,
-            'note' => $request->note,
-            'images' => $fullImageUrls,
-            'customer_name' => $order->user->name,
-            'customer_email' => $order->user->email,
-            'customer_phone' => $order->user->address->phone ?? null,
-        ]);
+        app(\App\Services\NotificationService::class)->notifyOrderUpdate(
+            $order, 
+            $request->status, 
+            $request->note, 
+            $fullImageUrls
+        );
 
         return response()->json($order->load(['detail', 'updates.user']));
     }

@@ -62,7 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('customers/{id}', [CustomersController::class, 'show']);
 
         // Supervisor only routes (inside backoffice)
-        Route::group(['middleware' => 'role:supervisor,staff'], function () {
+        Route::group(['middleware' => 'role:supervisor'], function () {
             Route::get('audit-logs', [AuditController::class, 'index']);
         });
 

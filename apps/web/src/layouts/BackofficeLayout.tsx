@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
   Package, 
@@ -36,58 +36,113 @@ export default function BackofficeLayout() {
     return <NotFoundPage />;
   }
 
-  const menuItems = [
-    { title: 'Dashboard', icon: LayoutDashboard, path: '/backoffice', roles: ['admin', 'staff', 'supervisor'] },
-    { title: 'Total Pesanan', icon: Package, path: '/backoffice/orders', roles: ['admin', 'staff', 'supervisor'] },
-    { title: 'Pelanggan', icon: Users, path: '/backoffice/customers', roles: ['admin', 'staff', 'supervisor'] },
-    { title: 'Audit Trail', icon: FileSearch, path: '/backoffice/audit', roles: ['admin', 'staff', 'supervisor'] },
-    { title: 'Parameters', icon: Settings, path: '/backoffice/parameters', roles: ['admin', 'supervisor'] },
-    { title: 'User Management', icon: UserIcon, path: '/backoffice/users', roles: ['admin', 'supervisor'] },
+  const menuGroups = [
+    {
+      title: 'Main',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, path: '/backoffice', roles: ['admin', 'staff', 'supervisor'] },
+        { title: 'Total Pesanan', icon: Package, path: '/backoffice/orders', roles: ['admin', 'staff', 'supervisor'] },
+        { title: 'Pelanggan', icon: Users, path: '/backoffice/customers', roles: ['admin', 'staff', 'supervisor'] },
+      ]
+    },
+    {
+      title: 'System',
+      items: [
+        { title: 'Audit Trail', icon: FileSearch, path: '/backoffice/audit', roles: ['admin', 'supervisor'] },
+        { title: 'Parameters', icon: Settings, path: '/backoffice/parameters', roles: ['admin', 'supervisor'] },
+        { title: 'User Management', icon: UserIcon, path: '/backoffice/users', roles: ['admin', 'supervisor'] },
+      ]
+    }
   ];
 
-  const filteredMenu = menuItems.filter(item => item.roles.includes(roleName || ''));
-
   return (
-    <div className="min-h-screen bg-slate-50 flex overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex overflow-hidden font-sans">
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden "
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)} 
         />
       )}
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 lg:relative bg-white border-r border-slate-200 h-screen flex flex-col transition-none  shadow-xl lg:shadow-none lg:translate-x-0",
-        isSidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:w-20 lg:translate-x-0"
+        "fixed inset-y-0 left-0 z-50 lg:relative bg-white border-r border-slate-200 h-screen flex flex-col transition-all duration-300 shadow-xl lg:shadow-none lg:translate-x-0 overflow-hidden",
+        isSidebarOpen ? "w-72 translate-x-0" : "w-72 -translate-x-full lg:w-24 lg:translate-x-0"
       )}>
-        <div className="flex items-center gap-3 h-16 px-6 border-b border-slate-100 flex-shrink-0">
-          <div className="p-2 rounded-xl bg-primary flex-shrink-0">
-            <Cpu className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-3 h-20 px-6 border-b border-slate-100 flex-shrink-0">
+          <div className="p-2.5 rounded-xl bg-primary shadow-lg shadow-primary/20 flex-shrink-0">
+            <Cpu className="w-6 h-6 text-white" />
           </div>
-          {isSidebarOpen && <span className="font-black tracking-tight  transition-none">SETYA ABADI</span>}
+          <AnimatePresence>
+            {isSidebarOpen && (
+              <motion.span 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="font-black tracking-tighter text-lg whitespace-nowrap"
+              >
+                SETYA ABADI
+              </motion.span>
+            )}
+          </AnimatePresence>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-          {filteredMenu.map((item) => {
-            const isActive = location.pathname === item.path;
-            const Icon = item.icon;
+        <nav className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+          {menuGroups.map((group, idx) => {
+            const visibleItems = group.items.filter(item => item.roles.includes(roleName || ''));
+            if (visibleItems.length === 0) return null;
+
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center w-full min-h-[44px] transition-none group overflow-hidden rounded-md border",
-                  isActive ? "bg-primary text-primary-foreground border-primary" : "text-slate-500 border-transparent hover:text-slate-900 hover:bg-slate-100 hover:border-slate-200",
-                  isSidebarOpen ? "justify-start px-3" : "justify-center px-0"
+              <div key={idx} className="space-y-2">
+                {isSidebarOpen ? (
+                  <h3 className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
+                    {group.title}
+                  </h3>
+                ) : (
+                  <div className="h-px bg-slate-100 mx-2 mb-4" />
                 )}
-                title={!isSidebarOpen ? item.title : undefined}
-              >
-                <Icon className={cn("w-5 h-5 flex-shrink-0", isActive ? "text-primary-foreground" : "text-slate-400 group-hover:text-slate-700")} />
-                {isSidebarOpen && <span className="font-bold ml-3 flex-1 truncate">{item.title}</span>}
-              </Link>
-            )
+                
+                <div className="space-y-1">
+                  {visibleItems.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={cn(
+                          "flex items-center w-full min-h-[48px] px-4 rounded-xl transition-all duration-200 group relative",
+                          isActive 
+                            ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20" 
+                            : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                        )}
+                        title={!isSidebarOpen ? item.title : undefined}
+                      >
+                        <Icon className={cn(
+                          "w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110", 
+                          isActive ? "text-primary shadow-glow" : "text-slate-400 group-hover:text-primary"
+                        )} />
+                        {isSidebarOpen && (
+                          <span className={cn(
+                            "font-bold ml-4 flex-1 truncate text-sm tracking-tight",
+                            isActive ? "opacity-100" : "opacity-80 group-hover:opacity-100"
+                          )}>
+                            {item.title}
+                          </span>
+                        )}
+                        {isActive && isSidebarOpen && (
+                          <motion.div 
+                            layoutId="active-pill" 
+                            className="absolute right-2 w-1.5 h-1.5 rounded-full bg-primary" 
+                          />
+                        )}
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            );
           })}
         </nav>
 
