@@ -3,8 +3,7 @@ node_modules
 dist
 .env
 .env.local
-apps/notification-service/auth_info_baileys/**/*
-!apps/notification-service/auth_info_baileys/.gitkeep
+**/auth_info_baileys/
 # Docker environments
 docker/api.env
 docker/notification.env

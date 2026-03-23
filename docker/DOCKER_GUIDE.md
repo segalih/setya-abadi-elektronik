@@ -1,61 +1,104 @@
-# Setya Abadi Elektronik - Docker Installation Guide
+# Panduan Deployment ke Server
 
-Panduan ini menjelaskan cara menginstal dan menjalankan seluruh ekosistem Setya Abadi Elektronik (API, Web Frontend, & Notification Service) menggunakan Docker.
-
-## 📋 Prasyarat
-- **Docker Desktop** (untuk Windows) atau **Docker Engine/Compose** (untuk Linux).
-- Memastikan port **3000, 3001, 8000, dan 3306** tersedia.
-
-## 📂 Struktur Folder
-Semua konfigurasi Docker dipusatkan di folder `docker/`:
-- `docker/api/`: Dockerfile & Nginx untuk Laravel API.
-- `docker/web/`: Dockerfile & Nginx untuk React Frontend.
-- `docker/notification-service/`: Dockerfile untuk Node.js (WhatsApp).
-- `docker/docker-compose.yml`: Orkestrator seluruh layanan.
+## Prasyarat
+- Docker dan Docker Compose terinstall di server
+- Database MySQL sudah tersedia (terpisah dari Docker)
+- `git` terinstall untuk clone repo
 
 ---
 
-## 🚀 Langkah Instalasi
+## Langkah Deployment
 
-### 1. Persiapan Environment
-Pindah ke folder root proyek dan buat file `.env` untuk Docker:
+### 1. Clone Repository
 ```bash
-# Salin template env ke file .env di dalam folder docker
-cp docker/.env.example docker/.env
+git clone <repo-url> setya-abadi-elektronik
+cd setya-abadi-elektronik
 ```
-Buka `docker/.env` dan sesuaikan nilainya:
-- **EXTERNAL_STORAGE_PATH**: Ubah ke path penyimpanan di luar Docker.
-  - Windows: `D:/SetyaStorage`
-  - Linux: `/home/setyanet/storage`
 
-### 2. Jalankan Docker Compose
-Masuk ke folder `docker/` dan jalankan perintah build & up:
+### 2. Buat File Environment
+
 ```bash
 cd docker
-docker compose up -d --build
+
+# API
+cp api.env.example api.env
+nano api.env
 ```
 
-### 3. Inisialisasi Database (Hanya Sekali)
-Setelah kontainer berjalan, jalankan migrasi database Laravel:
+Isi nilai berikut di `api.env`:
+```
+APP_URL=http://IP_SERVER_ANDA:8000
+DB_HOST=IP_DATABASE_SERVER
+DB_USERNAME=user_db
+DB_PASSWORD=password_db
+MIDTRANS_SERVER_KEY=SB-Mid-server-xxxx
+```
+
 ```bash
-docker exec -it setya-api php artisan migrate:fresh --seed
+# Notification service
+cp notification.env.example notification.env
+nano notification.env
+# Isi SMTP, APP_URL=http://IP_SERVER:3000
+
+# Web frontend (build args)
+cp web.env.example web.env
+nano web.env
+# Isi VITE_API_URL=http://IP_SERVER:8000/api
+```
+
+### 3. Build dan Jalankan
+
+```bash
+# Di dalam folder docker/
+docker compose build --no-cache
+docker compose up -d
+
+# Cek status
+docker compose ps
+```
+
+### 4. Inisialisasi Laravel (first deploy only)
+
+```bash
+# Generate app key jika belum ada
+docker compose exec app php artisan key:generate
+
+# Jalankan migrasi
+docker compose exec app php artisan migrate --force
+
+# Buat symlink storage
+docker compose exec app php artisan storage:link
+
+# Seed data awal (jika ada)
+docker compose exec app php artisan db:seed --force
+```
+
+### 5. Verifikasi
+
+| Service | URL |
+|---------|-----|
+| Web | `http://IP_SERVER:3000` |
+| API | `http://IP_SERVER:8000/api/health` |
+| Notification | `http://IP_SERVER:3001` |
+
+---
+
+## Update Deployment (Selanjutnya)
+
+```bash
+git pull
+cd docker
+docker compose build
+docker compose up -d
+docker compose exec app php artisan migrate --force
+docker compose exec app php artisan config:cache
+docker compose exec app php artisan route:cache
 ```
 
 ---
 
-## 🔗 Akses Layanan
-- **Web Frontend**: [http://localhost:3000](http://localhost:3000)
-- **API Backend**: [http://localhost:8000](http://localhost:8000)
-- **Notification Service**: [http://localhost:3001](http://localhost:3001)
+## Notes
 
-## 💾 Penyimpanan Luar (Persistent Storage)
-File upload (API) dan session WhatsApp (Baileys) akan disimpan secara otomatis di path yang Anda tentukan di `EXTERNAL_STORAGE_PATH`.
-- Path `/api`: Menyimpan file order/bukti bayar.
-- Path `/baileys`: Menyimpan session login WhatsApp.
-
-## 🛠 Troubleshooting
-- **Permission Issue (Linux)**: Jika folder storage tidak bisa ditulisi, jalankan `sudo chown -R 777` pada folder di host.
-- **Port Conflict**: Jika port sudah terpakai, ubah mapping port di `docker-compose.yml`.
-
----
-*Created by Antigravity*
+- **auth_info_baileys** (WhatsApp auth) disimpan di Docker volume `baileys_auth` — persistent antar restart
+- **Storage Laravel** disimpan di volume `api_storage`
+- Untuk **HTTPS**: pasang reverse proxy (nginx/caddy) di depan port 3000 dan 8000

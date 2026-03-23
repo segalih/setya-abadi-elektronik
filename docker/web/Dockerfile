@@ -1,26 +1,35 @@
-FROM node:20-alpine as build
+# Stage 1: Build Vite app
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Install pnpm
 RUN npm install -g pnpm
 
-# Copy package files (monorepo root and workspace packages)
+# Build args passed from docker-compose (or --build-arg)
+ARG VITE_API_URL=http://localhost:8000/api
+ARG VITE_MIDTRANS_CLIENT_KEY=Mid-client-TvoAzMIy6duIywlA
+
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_MIDTRANS_CLIENT_KEY=$VITE_MIDTRANS_CLIENT_KEY
+
+# Copy monorepo workspace config
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
 
-# Install dependencies
-RUN pnpm install --filter web...
+# Install only web workspace deps
+RUN pnpm install --filter web... --frozen-lockfile
 
-# Copy source
-COPY . .
+# Copy web source
+COPY apps/web/ ./apps/web/
 
 # Build
-RUN pnpm run build --filter web
+RUN pnpm --filter web build
 
-# Production stage
+# Stage 2: Serve with Nginx
 FROM nginx:stable-alpine
+
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
-COPY ./docker/web/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/web/nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
