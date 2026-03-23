@@ -17,7 +17,7 @@ services:
 
   # Nginx for API
   nginx-api:
-    image: nginx:stable-alpine
+    image: docker.io/library/nginx:stable-alpine
     container_name: setya-nginx-api
     restart: unless-stopped
     ports:
