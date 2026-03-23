@@ -9,7 +9,7 @@ RUN npm install -g pnpm
 COPY apps/notification-service/package.json apps/notification-service/pnpm-lock.yaml* ./
 
 # Install all deps (including dev for build)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy source
 COPY apps/notification-service/src ./src
@@ -27,7 +27,7 @@ RUN npm install -g pnpm
 
 # Copy package files and install production deps only
 COPY apps/notification-service/package.json apps/notification-service/pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --prod
 
 # Copy compiled output from build stage
 COPY --from=build /app/dist ./dist

@@ -17,7 +17,7 @@ COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
 
 # Install only web workspace deps
-RUN pnpm install --filter web... --frozen-lockfile
+RUN pnpm install --filter web...
 
 # Copy web source
 COPY apps/web/ ./apps/web/
