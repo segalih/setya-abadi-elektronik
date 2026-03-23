@@ -253,7 +253,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, string $id)
     {
         $request->validate([
-            'status' => 'required|string|in:pending,reviewed,in_production,ready_to_ship,shipped,completed,cancelled',
+            'status' => 'required|string|in:pending,reviewed,in_production,ready_to_ship,shipped,cancelled',
             'note' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'image|max:2048',
@@ -262,7 +262,7 @@ class OrderController extends Controller
         $order = Order::with('user.address')->findOrFail($id);
 
         // Enforce payment_status=success before progressing beyond reviewed
-        $paidRequiredStatuses = ['in_production', 'ready_to_ship', 'shipped', 'completed'];
+        $paidRequiredStatuses = ['in_production', 'ready_to_ship', 'shipped'];
         if (in_array($request->status, $paidRequiredStatuses) && $order->payment_status !== 'success') {
             return response()->json([
                 'message' => 'Pesanan belum dibayar. Hanya pesanan dengan pembayaran sukses yang dapat diproses lebih lanjut.'

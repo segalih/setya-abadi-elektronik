@@ -18,6 +18,7 @@ import RegisterPage from './modules/auth/RegisterPage';
 import OrderDetailPage from './modules/dashboard/OrderDetailPage';
 import ProfilePage from '@/modules/profile/ProfilePage';
 import NotFoundPage from '@/modules/error/NotFoundPage';
+import VerifyEmailPage from '@/modules/auth/VerifyEmailPage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
 
           {/* Protected Routes */}
           <Route 

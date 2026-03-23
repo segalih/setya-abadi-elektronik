@@ -68,7 +68,6 @@ export default function BackofficeOrders() {
       in_production: "bg-primary/20 text-primary border-primary/30",
       ready_to_ship: "bg-secondary/20 text-secondary border-secondary/30",
       shipped: "bg-slate-100 text-slate-700 border-slate-200",
-      completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
     };
     return <Badge className={cn("font-black uppercase text-[10px] px-3", variants[status])}>{status}</Badge>;
   };
@@ -119,6 +118,7 @@ export default function BackofficeOrders() {
                      <option value="pending">Pending</option>
                      <option value="reviewed">Ditinjau</option>
                      <option value="in_production">Produksi</option>
+                     <option value="ready_to_ship">Siap Kirim</option>
                      <option value="shipped">Dikirim</option>
                   </select>
                </div>

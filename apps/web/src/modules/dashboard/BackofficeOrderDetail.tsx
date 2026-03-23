@@ -28,6 +28,8 @@ import {
   Phone,
   Layout
 } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +45,7 @@ export default function BackofficeOrderDetail() {
   const navigate = useNavigate();
   const [order, setOrder] = useState<any>(null);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const { addToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   
@@ -53,12 +56,17 @@ export default function BackofficeOrderDetail() {
 
   const fetchOrder = async () => {
     try {
-      const response = await api.get(`/orders/${id}`);
+      const response = await api.get(`/backoffice/orders/${id}`);
       setOrder(response.data);
       setNewStatus(response.data.status);
       
-      const logsResp = await api.get(`/orders/${id}/audit-logs`);
-      setAuditLogs(logsResp.data.data || []);
+      
+      try {
+        const logsResp = await api.get(`/backoffice/orders/${id}/audit-logs`);
+        setAuditLogs(logsResp.data.data || []);
+      } catch (err) {
+        console.warn('Audit logs not available');
+      }
     } catch (error) {
       console.error('Failed to fetch order details', error);
     } finally {
@@ -72,7 +80,15 @@ export default function BackofficeOrderDetail() {
 
   const handleUpdateStatus = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newStatus === order.status) return alert('Silakan pilih status baru.');
+    if (!newStatus) return;
+    if (newStatus === order.status) {
+      addToast({
+        title: "Peringatan",
+        description: "Silakan pilih status baru.",
+        variant: "warning",
+      });
+      return;
+    }
 
     const formData = new FormData();
     formData.append('status', newStatus);
@@ -88,12 +104,19 @@ export default function BackofficeOrderDetail() {
       await api.post(`/backoffice/orders/${id}/status`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert('Status pesanan berhasil diperbarui!');
       setNote('');
-      setFiles(null);
       fetchOrder();
+      addToast({
+        title: "Sukses",
+        description: "Status pesanan berhasil diperbarui!",
+        variant: "success",
+      });
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Gagal memperbarui status');
+      addToast({
+        title: "Gagal",
+        description: error.response?.data?.message || 'Gagal memperbarui status',
+        variant: "destructive",
+      });
     } finally {
       setIsActionLoading(false);
     }
@@ -107,10 +130,18 @@ export default function BackofficeOrderDetail() {
     { key: 'reviewed', label: 'Ditinjau', icon: ClipboardCheck },
     { key: 'in_production', label: 'Produksi', icon: Package },
     { key: 'ready_to_ship', label: 'Kemas', icon: Box },
-    { key: 'shipped', label: 'Kirim', icon: Truck },
-    { key: 'completed', label: 'Selesai', icon: CheckCircle2 },
+    { key: 'shipped', label: 'Dikirim', icon: Truck },
     { key: 'cancelled', label: 'Dibatalkan', icon: AlertCircle },
   ];
+
+  const getMaskingLabel = (val: string) => {
+    const map: Record<string, string> = {
+      ya_merah: 'Ya, merah', ya_biru: 'Ya, biru', ya_hijau: 'Ya, hijau',
+      ya_hitam: 'Ya, hitam', ya_putih: 'Ya, putih', tidak: 'Tidak',
+      green: 'Hijau', red: 'Merah', blue: 'Biru', black: 'Hitam', white: 'Putih', none: 'Tidak',
+    };
+    return map[val] || val || '-';
+  };
 
   const currentStepIndex = steps.findIndex(s => s.key === order.status);
 
@@ -141,7 +172,55 @@ export default function BackofficeOrderDetail() {
            </div>
         </header>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+           {/* Progress Timeline */}
+           <Card className="border-none shadow-sm overflow-hidden mb-8">
+             <CardContent className="p-8">
+                <div className="relative flex justify-between items-start">
+                   {/* Background Line */}
+                   <div className="absolute top-6 left-0 w-full h-1 bg-slate-100 rounded-full z-0" />
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: order.status === 'cancelled' || order.status === 'expired' ? '100%' : `${(currentStepIndex / (steps.filter(s => s.key !== 'cancelled').length - 1)) * 100}%` }}
+                     transition={{ duration: 1.5, ease: "circOut" }}
+                     className={cn("absolute top-6 left-0 h-1 rounded-full z-10 shadow-sm transition-colors", order.status === 'cancelled' || order.status === 'expired' ? "bg-red-500" : "bg-primary")} 
+                   />
+
+                   {steps.filter(s => s.key !== 'cancelled').map((step, i) => {
+                     const Icon = step.icon;
+                     const isCancelled = order.status === 'cancelled' || order.status === 'expired';
+                     const isPast = isCancelled ? true : i < currentStepIndex;
+                     const isCurrent = isCancelled ? false : i === currentStepIndex;
+                     
+                     return (
+                       <div key={step.key} className="relative z-20 flex flex-col items-center gap-3 bg-white p-2 rounded-xl">
+                          <motion.div 
+                            initial={false}
+                            animate={isCurrent ? { scale: 1.2 } : { scale: 1 }}
+                            className={cn(
+                              "w-12 h-12 rounded-full border-4 flex items-center justify-center transition-colors shadow-sm bg-white",
+                              isPast && !isCancelled ? "border-primary text-primary" : 
+                              isPast && isCancelled ? "border-red-500 text-red-500 bg-red-50" :
+                              isCurrent ? "border-primary text-primary shadow-xl shadow-primary/20" : 
+                              "border-slate-100 text-slate-300"
+                            )}
+                          >
+                             {isPast ? (isCancelled ? <AlertCircle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />) : <Icon className="w-5 h-5" />}
+                          </motion.div>
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-widest",
+                            isCancelled ? "text-red-500" :
+                            i <= currentStepIndex ? "text-primary" : "text-slate-400"
+                          )}>
+                            {step.label}
+                          </span>
+                       </div>
+                     )
+                   })}
+                </div>
+             </CardContent>
+           </Card>
+
+           <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
            <div className="lg:col-span-2 space-y-8">
               {/* Order Specs & Customer */}
               <div className="grid md:grid-cols-2 gap-6">
@@ -413,6 +492,59 @@ export default function BackofficeOrderDetail() {
                     })()}
                  </CardContent>
               </Card>
+
+              {/* File Management */}
+              {order.detail?.file_path && (
+                <Card className="border-none shadow-sm overflow-hidden">
+                   <CardHeader className="bg-slate-50/50 border-b py-4">
+                      <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                         <FileText className="w-4 h-4 text-primary" /> Dokumen Desain
+                      </CardTitle>
+                   </CardHeader>
+                   <CardContent className="p-6 space-y-6">
+                      <div className="space-y-3">
+                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">File Aktif</label>
+                         <a 
+                           href={api.defaults.baseURL?.replace('/api', '') + '/storage/' + order.detail.file_path} 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-4 transition-all hover:border-primary/40 group cursor-pointer"
+                         >
+                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                               <Download className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0 pr-2">
+                               <div className="text-xs font-bold truncate">{order.detail.file_path.split('/').pop() || 'Design_File.zip'}</div>
+                               <div className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter">Current Revision</div>
+                            </div>
+                         </a>
+                      </div>
+
+                      {order.detail?.data_json?.file_history && order.detail?.data_json?.file_history.length > 0 && (
+                        <div className="space-y-3 pt-2 border-t mt-4">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Riwayat Revisi</label>
+                           <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                              {order.detail.data_json.file_history.map((hist: any, idx: number) => (
+                                <a 
+                                  key={idx} 
+                                  href={api.defaults.baseURL?.replace('/api', '') + '/storage/' + hist.path}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-between p-2 rounded-lg bg-slate-100/50 border border-slate-100 hover:bg-slate-100 transition-colors"
+                                >
+                                   <div className="flex items-center gap-2 min-w-0">
+                                      <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                                      <span className="text-[10px] font-bold text-slate-600 truncate">{hist.path.split('/').pop()}</span>
+                                   </div>
+                                   <span className="text-[8px] font-black text-slate-400 uppercase tabular-nums">{new Date(hist.uploaded_at).toLocaleDateString()}</span>
+                                </a>
+                              ))}
+                           </div>
+                        </div>
+                      )}
+                   </CardContent>
+                </Card>
+              )}
 
               {/* Help & Support */}
               <div className="p-8 rounded-[2.5rem] bg-slate-900 text-white space-y-6 shadow-2xl relative overflow-hidden group">

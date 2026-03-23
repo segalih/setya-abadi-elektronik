@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/use-toast';
 import { Loader2, User, MapPin, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,8 @@ type AddressFormValues = z.infer<typeof addressSchema>;
 export default function ProfilePage() {
   const { user, setAuth } = useAuthStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
   const actualUser = (user as any)?.user || user;
   const token = localStorage.getItem('token') || '';
 
@@ -89,10 +92,19 @@ export default function ProfilePage() {
     onSuccess: (data) => {
       // Sync fresh data to Zustand (reusing current token)
       setAuth(data.user, token);
-      alert('Profil berhasil diperbarui!');
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      addToast({
+        title: "Sukses",
+        description: "Profil berhasil diperbarui!",
+        variant: "success",
+      });
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Gagal memperbarui profil');
+      addToast({
+        title: "Gagal",
+        description: error.response?.data?.message || 'Gagal memperbarui profil',
+        variant: "destructive",
+      });
     },
   });
 
@@ -103,10 +115,19 @@ export default function ProfilePage() {
     },
     onSuccess: (data) => {
       setAuth(data.user, token);
-      alert('Alamat berhasil diperbarui!');
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      addToast({
+        title: "Sukses",
+        description: "Alamat berhasil diperbarui!",
+        variant: "success",
+      });
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Gagal memperbarui alamat');
+      addToast({
+        title: "Gagal",
+        description: error.response?.data?.message || 'Gagal memperbarui alamat',
+        variant: "destructive",
+      });
     },
   });
 

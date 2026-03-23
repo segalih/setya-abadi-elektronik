@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import { Cpu, Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,17 +11,29 @@ import MotionPage from '@/components/shared/MotionWrapper';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/services/api';
+import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const queryClient = useQueryClient();
   const [errorMsg, setErrorMsg] = useState('');
-  const [formData, setFormData] = useState({ email: '', password: '' });
+
+  const formik = useFormik({
+    initialValues: { email: '', password: '' },
+    validationSchema: Yup.object({
+      email: Yup.string().email('Format email tidak valid').required('Email wajib diisi'),
+      password: Yup.string().min(8, 'Password minimal 8 karakter').required('Password wajib diisi'),
+    }),
+    onSubmit: (values) => {
+      setErrorMsg('');
+      loginMutation.mutate(values);
+    },
+  });
 
   // 1. useMutation -> login
   const loginMutation = useMutation({
-    mutationFn: async (credentials: typeof formData) => {
+    mutationFn: async (credentials: typeof formik.values) => {
       const { data } = await api.post('/login', credentials);
       return data;
     },
@@ -53,12 +67,6 @@ export default function LoginPage() {
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    loginMutation.mutate(formData);
-  };
-
   return (
     <MotionPage>
       <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50 pcb-grid relative overflow-hidden">
@@ -82,20 +90,25 @@ export default function LoginPage() {
               <CardDescription>Masukkan email dan password Anda.</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={formik.handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Email</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <Input 
                       type="email" 
+                      id="email"
+                      name="email"
                       placeholder="nama@email.com" 
-                      className="pl-10"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className={cn("pl-10", formik.touched.email && formik.errors.email && "border-red-500 focus-visible:ring-red-500")}
+                      value={formik.values.email}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
                     />
                   </div>
+                  {formik.touched.email && formik.errors.email && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{formik.errors.email}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground block text-left">Password</label>
@@ -103,13 +116,18 @@ export default function LoginPage() {
                     <Lock className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
                     <Input 
                       type="password" 
+                      id="password"
+                      name="password"
                       placeholder="••••••••" 
-                      className="pl-10"
-                      required
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className={cn("pl-10", formik.touched.password && formik.errors.password && "border-red-500 focus-visible:ring-red-500")}
+                      value={formik.values.password}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
                     />
                   </div>
+                  {formik.touched.password && formik.errors.password && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 uppercase tracking-wider">{formik.errors.password}</p>
+                  )}
                 </div>
 
                 {errorMsg && (
