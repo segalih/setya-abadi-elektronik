@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from 'lucide-react';
@@ -12,6 +12,7 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate();
   
   const token = searchParams.get('token');
+  const hasCalledRef = useRef(false);
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Sedang memverifikasi email Anda...');
@@ -22,6 +23,10 @@ export default function VerifyEmailPage() {
       setMessage('Link verifikasi tidak valid atau tidak lengkap. Parameter token tidak ditemukan.');
       return;
     }
+
+    // Prevent double call from React StrictMode
+    if (hasCalledRef.current) return;
+    hasCalledRef.current = true;
 
     const verifyEmail = async () => {
       try {
