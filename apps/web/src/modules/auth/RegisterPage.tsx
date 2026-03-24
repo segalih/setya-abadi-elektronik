@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useFormik } from 'formik';
@@ -16,6 +16,29 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { addToast } = useToast();
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Ref untuk guard double-submit — selalu baca nilai terbaru tanpa stale closure
+  const isPendingRef = useRef(false);
+
+  const registerMutation = useMutation({
+    mutationFn: async (data: Record<string, string>) => {
+      const response = await api.post('/register', data);
+      return response.data;
+    },
+    onMutate: () => { isPendingRef.current = true; },
+    onSettled: () => { isPendingRef.current = false; },
+    onSuccess: () => {
+      addToast({
+        title: "Registrasi Berhasil",
+        description: "Akun berhasil dibuat! Silakan login untuk melanjutkan.",
+      });
+      navigate('/login');
+    },
+    onError: (err: any) => {
+      setErrorMsg(err.response?.data?.message || 'Registrasi gagal. Cek kembali data Anda (email mungkin sudah terdaftar).');
+    }
+  });
+
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -46,25 +69,9 @@ export default function RegisterPage() {
       postal_code: Yup.string().required('Kode Pos wajib diisi'),
     }),
     onSubmit: (values) => {
+      if (isPendingRef.current) return; // guard double-submit via ref
       setErrorMsg('');
       registerMutation.mutate(values);
-    }
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: async (data: typeof formik.values) => {
-      const response = await api.post('/register', data);
-      return response.data;
-    },
-    onSuccess: () => {
-      addToast({
-        title: "Registrasi Berhasil",
-        description: "Akun berhasil dibuat! Silakan login untuk melanjutkan.",
-      });
-      navigate('/login');
-    },
-    onError: (err: any) => {
-      setErrorMsg(err.response?.data?.message || 'Registrasi gagal. Cek kembali data Anda (email mungkin sudah terdaftar).');
     }
   });
 
