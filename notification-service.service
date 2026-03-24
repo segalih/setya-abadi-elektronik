@@ -1,0 +1,13 @@
+[Unit]
+Description=Notification Service
+After=network.target
+
+[Service]
+User=setyanet
+Group=setyanet
+Restart=always
+WorkingDirectory=/home/setyanet/setya-abadi-elektronik/apps/notification-service
+ExecStart=/usr/local/bin/node /home/setyanet/setya-abadi-elektronik/apps/notification-service/dist/main.js
+
+[Install]
+WantedBy=multi-user.target
