@@ -36,7 +36,7 @@ return [
     ],
 
     'notification' => [
-        'url' => env('NOTIFICATION_SERVICE_URL', 'http://localhost:3001'),
+        'url' => env('NOTIFICATION_SERVICE_URL', 'http://localhost:8001'),
     ],
 
 ];

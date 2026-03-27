@@ -10,10 +10,11 @@ class SystemParameterSeeder extends Seeder
     public function run(): void
     {
         $defaults = [
-            ['key' => 'PCB_SINGLE_LAYER_PRICE_PER_CM', 'value' => '500'],
-            ['key' => 'PCB_DOUBLE_LAYER_PRICE_PER_CM', 'value' => '1000'],
-            ['key' => 'PCB_SOLDERMASK_PERCENT', 'value' => '15'],
-            ['key' => 'PCB_SILKSCREEN_PERCENT', 'value' => '10'],
+            ['key' => 'PCB_FR2_PRICE_PER_CM', 'value' => '300'],
+            ['key' => 'PCB_FR4_PRICE_PER_CM', 'value' => '500'],
+            ['key' => 'PCB_DOUBLE_LAYER_MULTIPLIER', 'value' => '2'],
+            ['key' => 'PCB_MASKING_PRICE_PER_LAYER', 'value' => '10000'],
+            ['key' => 'PCB_SILKSCREEN_PRICE_PER_LAYER', 'value' => '10000'],
         ];
 
         foreach ($defaults as $param) {

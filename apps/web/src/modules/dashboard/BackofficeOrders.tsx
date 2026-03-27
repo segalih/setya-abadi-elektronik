@@ -16,7 +16,7 @@ import {
   Box,
   Eye
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,6 +25,7 @@ import api from '@/services/api';
 import { cn } from '@/lib/utils';
 
 export default function BackofficeOrders() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -154,6 +155,7 @@ export default function BackofficeOrders() {
                              initial={{ opacity: 0, y: 10 }}
                              animate={{ opacity: 1, y: 0 }}
                              transition={{ delay: i * 0.05 }}
+                             onClick={() => navigate(`/backoffice/orders/${order.id}`)}
                              className={cn(
                                "border-b last:border-0 hover:bg-slate-50/80 transition-none cursor-pointer group",
                                order.status === 'pending' && "bg-amber-50/20"
@@ -181,7 +183,7 @@ export default function BackofficeOrders() {
                                  </div>
                               </td>
                               <td className="p-6">
-                                 <div className="font-black text-slate-900">Rp {order.total_price.toLocaleString('id-ID')}</div>
+                                 <div className="font-black text-slate-900">{order.total_price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</div>
                                  <Badge variant="outline" className={cn(
                                    "text-[9px] font-black uppercase tracking-tighter mt-1",
                                    order.payment_status === 'success' ? "text-emerald-500 border-emerald-100" : "text-amber-500 border-amber-100"

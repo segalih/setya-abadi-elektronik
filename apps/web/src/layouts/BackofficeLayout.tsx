@@ -47,6 +47,12 @@ export default function BackofficeLayout() {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  }, []);
+
   // Fallback for corrupted localstorage where user is nested
   const actualUser = (user as any)?.user || user;
   const roleName = typeof actualUser?.role === 'string' ? actualUser.role : actualUser?.role?.name;
@@ -61,7 +67,7 @@ export default function BackofficeLayout() {
       group: 'Main',
       items: [
         { title: 'Dashboard', icon: LayoutDashboard, path: '/backoffice' },
-        { title: 'Total Pesanan', icon: Package, path: '/backoffice/orders' },
+        { title: 'Pesanan', icon: Package, path: '/backoffice/orders' },
         { title: 'Pelanggan', icon: Users, path: '/backoffice/customers' },
       ]
     },
@@ -77,6 +83,14 @@ export default function BackofficeLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100">
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 lg:hidden transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 lg:relative bg-white border-r border-slate-200 h-screen flex flex-col transition-all duration-300 shadow-xl lg:shadow-none lg:translate-x-0 overflow-hidden",
@@ -111,6 +125,9 @@ export default function BackofficeLayout() {
                     <Link
                       key={item.path}
                       to={item.path}
+                      onClick={() => {
+                        if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                      }}
                       className={cn(
                         "flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all group",
                         isActive
@@ -121,7 +138,7 @@ export default function BackofficeLayout() {
                     >
                       <Icon className={cn(
                         "w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110", 
-                        isActive ? "text-primary shadow-glow" : "text-slate-400 group-hover:text-primary"
+                        isActive ? "text-white shadow-glow" : "text-slate-400 group-hover:text-primary"
                       )} />
                       {isSidebarOpen && (
                         <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="whitespace-nowrap">

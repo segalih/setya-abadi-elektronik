@@ -75,7 +75,7 @@ export default function BackofficeDashboard() {
 
   const statCards = [
     { title: 'Total Pesanan', value: stats?.total_orders || 0, icon: Package, color: 'text-primary', bg: 'bg-primary/10', desc: 'Total pesanan masuk bulan ini', show: true },
-    { title: 'Total Omzet', value: `Rp ${stats?.total_revenue?.toLocaleString('id-ID') || 0}`, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50', desc: 'Pendapatan kotor terverifikasi', show: isSupervisor },
+    { title: 'Total Omzet', value: (stats?.total_revenue || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }), icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50', desc: 'Pendapatan kotor terverifikasi', show: isSupervisor },
     { title: 'Antrian Review', value: stats?.pending_review || 0, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50', desc: 'Pesanan menunggu pengecekan file', show: true },
     { title: 'Proses Produksi', value: stats?.active_production || 0, icon: Activity, color: 'text-secondary', bg: 'bg-secondary/10', desc: 'PCB yang sedang berada di mesin', show: true },
   ].filter(card => card.show);
@@ -182,7 +182,7 @@ export default function BackofficeDashboard() {
                         </Badge>
                       </td>
                       <td className="px-6 py-4 text-right font-black text-sm text-slate-700">
-                        Rp {order.total_price?.toLocaleString('id-ID')}
+                        {order.total_price?.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
                       </td>
                     </tr>
                   )) : (

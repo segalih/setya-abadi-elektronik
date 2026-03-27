@@ -13,19 +13,21 @@ class PricingController extends Controller
     public function pcbPricing(): JsonResponse
     {
         $keys = [
-            'PCB_SINGLE_LAYER_PRICE_PER_CM',
-            'PCB_DOUBLE_LAYER_PRICE_PER_CM',
-            'PCB_SOLDERMASK_PERCENT',
-            'PCB_SILKSCREEN_PERCENT',
+            'PCB_FR2_PRICE_PER_CM',
+            'PCB_FR4_PRICE_PER_CM',
+            'PCB_DOUBLE_LAYER_MULTIPLIER',
+            'PCB_MASKING_PRICE_PER_LAYER',
+            'PCB_SILKSCREEN_PRICE_PER_LAYER',
         ];
 
         $params = SystemParameter::whereIn('key', $keys)->pluck('value', 'key');
 
         return response()->json([
-            'single_layer_price' => (float) ($params['PCB_SINGLE_LAYER_PRICE_PER_CM'] ?? 500),
-            'double_layer_price' => (float) ($params['PCB_DOUBLE_LAYER_PRICE_PER_CM'] ?? 1000),
-            'soldermask_percent' => (float) ($params['PCB_SOLDERMASK_PERCENT'] ?? 15),
-            'silkscreen_percent' => (float) ($params['PCB_SILKSCREEN_PERCENT'] ?? 10),
+            'fr2_price' => (float) ($params['PCB_FR2_PRICE_PER_CM'] ?? 300),
+            'fr4_price' => (float) ($params['PCB_FR4_PRICE_PER_CM'] ?? 500),
+            'double_layer_multiplier' => (float) ($params['PCB_DOUBLE_LAYER_MULTIPLIER'] ?? 2.0),
+            'masking_price' => (float) ($params['PCB_MASKING_PRICE_PER_LAYER'] ?? 10000),
+            'silkscreen_price' => (float) ($params['PCB_SILKSCREEN_PRICE_PER_LAYER'] ?? 10000),
         ]);
     }
 }

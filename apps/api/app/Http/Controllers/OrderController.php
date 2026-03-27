@@ -255,6 +255,7 @@ class OrderController extends Controller
         $request->validate([
             'status' => 'required|string|in:pending,reviewed,in_production,ready_to_ship,shipped,cancelled',
             'note' => 'nullable|string',
+            'additional_price' => 'nullable|numeric|min:0',
             'images' => 'nullable|array',
             'images.*' => 'image|max:2048',
         ]);
@@ -269,7 +270,21 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $order->update(['status' => $request->status]);
+        $order->status = $request->status;
+
+        if ($request->filled('additional_price')) {
+            $order->total_price = $order->total_price + $request->additional_price;
+            
+            // Log it in details or notes
+            $detail = $order->detail;
+            if ($detail) {
+                $dataJson = $detail->data_json ?? [];
+                $dataJson['shipping_or_additional_cost'] = $request->additional_price;
+                $detail->update(['data_json' => $dataJson]);
+            }
+        }
+
+        $order->save();
 
         $imagePaths = [];
         if ($request->hasFile('images')) {

@@ -7,7 +7,7 @@ User=setyanet
 Group=setyanet
 Restart=always
 WorkingDirectory=/home/setyanet/setya-abadi-elektronik/apps/notification-service
-ExecStart=/usr/local/bin/node /home/setyanet/setya-abadi-elektronik/apps/notification-service/dist/main.js
+ExecStart=/usr/bin/node /home/setyanet/setya-abadi-elektronik/apps/notification-service/dist/server.js
 
 [Install]
 WantedBy=multi-user.target

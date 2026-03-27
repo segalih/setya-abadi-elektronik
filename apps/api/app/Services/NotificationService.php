@@ -11,7 +11,7 @@ class NotificationService
 
     public function __construct()
     {
-        $url = config('services.notification.url', 'http://localhost:3001');
+        $url = config('services.notification.url', 'http://localhost:8001');
         $this->baseUrl = rtrim($url, '/') . '/api/notify';
     }
 

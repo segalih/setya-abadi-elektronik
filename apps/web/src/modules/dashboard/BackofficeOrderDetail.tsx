@@ -52,6 +52,7 @@ export default function BackofficeOrderDetail() {
   // Status Update State
   const [newStatus, setNewStatus] = useState('');
   const [note, setNote] = useState('');
+  const [additionalPrice, setAdditionalPrice] = useState('');
   const [files, setFiles] = useState<FileList | null>(null);
 
   const fetchOrder = async () => {
@@ -78,21 +79,47 @@ export default function BackofficeOrderDetail() {
     fetchOrder();
   }, [id]);
 
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (e.clipboardData && e.clipboardData.files.length > 0) {
+        const pastedFiles = Array.from(e.clipboardData.files).filter(f => f.type.startsWith('image/'));
+        if (pastedFiles.length > 0) {
+          const dataTransfer = new DataTransfer();
+          pastedFiles.forEach(f => dataTransfer.items.add(f));
+          if (files) {
+            Array.from(files).forEach(f => dataTransfer.items.add(f));
+          }
+          setFiles(dataTransfer.files);
+          addToast({ title: "Gambar Tersalin", description: `${pastedFiles.length} gambar berhasil ditambahkan.` });
+        }
+      }
+    };
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [files, addToast]);
+
+  const getNextStatusInfo = (current: string) => {
+    switch (current) {
+      case 'pending': return { status: 'reviewed', label: 'Tinjau Pesanan' };
+      case 'reviewed': return { status: 'in_production', label: 'Mulai Produksi' };
+      case 'in_production': return { status: 'ready_to_ship', label: 'Selesai Produksi & Kemas' };
+      case 'ready_to_ship': return { status: 'shipped', label: 'Kirim Pesanan' };
+      default: return null;
+    }
+  };
+
   const handleUpdateStatus = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newStatus) return;
-    if (newStatus === order.status) {
-      addToast({
-        title: "Peringatan",
-        description: "Silakan pilih status baru.",
-        variant: "warning",
-      });
-      return;
-    }
+    const nextInfo = order ? getNextStatusInfo(order.status) : null;
+    if (!nextInfo) return;
 
     const formData = new FormData();
-    formData.append('status', newStatus);
+    formData.append('status', nextInfo.status);
     formData.append('note', note);
+    if (nextInfo.status === 'reviewed' && additionalPrice) {
+      formData.append('additional_price', additionalPrice.toString());
+    }
+    
     if (files) {
       for (let i = 0; i < files.length; i++) {
         formData.append('images[]', files[i]);
@@ -148,7 +175,7 @@ export default function BackofficeOrderDetail() {
   return (
     <MotionPage>
       <div className="space-y-8">
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
            <div className="flex items-center gap-4">
               <Button variant="ghost" onClick={() => navigate(-1)} className="rounded-xl h-12 w-12 p-0 hover:bg-white border-2 border-transparent hover:border-slate-100">
                 <ArrowLeft className="w-5 h-5" />
@@ -174,8 +201,8 @@ export default function BackofficeOrderDetail() {
 
            {/* Progress Timeline */}
            <Card className="border-none shadow-sm overflow-hidden mb-8">
-             <CardContent className="p-8">
-                <div className="relative flex justify-between items-start">
+             <CardContent className="p-4 sm:p-8 overflow-x-auto custom-scrollbar">
+                <div className="relative flex justify-between items-start min-w-[500px] pb-4 px-2">
                    {/* Background Line */}
                    <div className="absolute top-6 left-0 w-full h-1 bg-slate-100 rounded-full z-0" />
                    <motion.div 
@@ -192,10 +219,11 @@ export default function BackofficeOrderDetail() {
                      const isCurrent = isCancelled ? false : i === currentStepIndex;
                      
                      return (
-                       <div key={step.key} className="relative z-20 flex flex-col items-center gap-3 bg-white p-2 rounded-xl">
+                       <div key={step.key} className="relative z-20 flex flex-col items-center gap-3 p-2 rounded-xl">
                           <motion.div 
                             initial={false}
-                            animate={isCurrent ? { scale: 1.2 } : { scale: 1 }}
+                            animate={isCurrent ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                            transition={isCurrent ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } : {}}
                             className={cn(
                               "w-12 h-12 rounded-full border-4 flex items-center justify-center transition-colors shadow-sm bg-white",
                               isPast && !isCancelled ? "border-primary text-primary" : 
@@ -262,7 +290,7 @@ export default function BackofficeOrderDetail() {
                        </CardTitle>
                     </CardHeader>
                     <CardContent className="p-6">
-                       <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-[11px] font-bold">
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-[11px] font-bold">
                           <div className="space-y-1">
                              <div className="text-muted-foreground uppercase text-[8px]">Layer</div>
                              <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">{order.detail?.data_json?.layers} Layer</div>
@@ -293,57 +321,83 @@ export default function BackofficeOrderDetail() {
                     <CardDescription className="text-[10px] font-bold text-muted-foreground">Pelu diketahui: Status hanya bisa dilanjutkan jika pembayaran sukses.</CardDescription>
                  </CardHeader>
                  <CardContent className="p-8">
-                    <form onSubmit={handleUpdateStatus} className="space-y-6">
-                       <div className="grid md:grid-cols-2 gap-6">
-                          <div className="space-y-3">
-                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pilih Status Baru</label>
-                             <select 
-                               className="w-full h-12 px-4 rounded-xl bg-slate-50 border-2 border-slate-100 text-sm font-bold focus:border-primary focus:bg-white transition-all outline-none"
-                               value={newStatus}
-                               onChange={(e) => setNewStatus(e.target.value)}
-                             >
-                                <option value="" disabled>Pilih Status...</option>
-                                {steps.map(s => (
-                                  <option key={s.key} value={s.key}>{s.label.toUpperCase()}</option>
-                                ))}
-                             </select>
-                          </div>
-                          <div className="space-y-3">
-                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Upload Bukti (Opsional)</label>
-                             <div className="relative h-12 w-full overflow-hidden rounded-xl border-2 border-dashed border-slate-200 hover:border-primary/50 transition-colors flex items-center px-4 gap-3 bg-slate-50/50">
-                                <Upload className="w-4 h-4 text-slate-400" />
-                                <span className="text-[10px] font-bold text-slate-500 truncate">{files ? `${files.length} file dipilih` : 'Pilih foto kemajuan...'}</span>
-                                <input 
-                                  type="file" 
-                                  multiple 
-                                  className="absolute inset-0 opacity-0 cursor-pointer" 
-                                  onChange={(e) => setFiles(e.target.files)}
-                                />
-                             </div>
-                          </div>
-                       </div>
-                       
-                       <div className="space-y-3">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Catatan / Keterangan</label>
-                          <Textarea 
-                            placeholder="Tuliskan catatan kemajuan atau kendala untuk pelanggan..." 
-                            className="min-h-[100px] rounded-2xl bg-slate-50 border-2 border-slate-100 focus:bg-white transition-all"
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                          />
-                       </div>
+                    
+                     <form onSubmit={handleUpdateStatus} className="space-y-6">
+                        <div className="grid xl:grid-cols-2 gap-6">
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status Selanjutnya</label>
+                              <div className="w-full h-12 px-4 rounded-xl bg-white border-2 border-slate-200 text-sm font-bold flex items-center text-slate-800">
+                                 {order ? (getNextStatusInfo(order.status)?.label || 'Seluruh Tahapan Selesai') : ''}
+                              </div>
+                           </div>
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Upload Bukti (Opsional)</label>
+                              <div className="relative h-12 w-full overflow-hidden rounded-xl border-2 border-dashed border-slate-300 hover:border-primary/50 transition-colors flex items-center px-4 gap-3 bg-white">
+                                 <Upload className="w-4 h-4 text-slate-400" />
+                                 <span className="text-[10px] font-bold text-slate-500 truncate">{files ? `${files.length} file dipilih` : 'Klik atau paste foto...'}</span>
+                                 <input 
+                                   type="file" 
+                                   multiple 
+                                   className="absolute inset-0 opacity-0 cursor-pointer" 
+                                   onChange={(e) => {
+                                      const dataTransfer = new DataTransfer();
+                                      if (e.target.files) {
+                                         Array.from(e.target.files).forEach(f => dataTransfer.items.add(f));
+                                      }
+                                      if (files) {
+                                         Array.from(files).forEach(f => dataTransfer.items.add(f));
+                                      }
+                                      setFiles(dataTransfer.files);
+                                   }}
+                                 />
+                              </div>
+                           </div>
+                        </div>
+                        
+                        {order?.status === 'pending' && (
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-primary">Tambahan Biaya (Shipping/Packing)</label>
+                              <Input 
+                                type="number"
+                                min={0}
+                                placeholder="Contoh: 25000"
+                                className="h-12 rounded-xl bg-white dark:bg-white border-2 border-slate-200 focus:bg-white focus:border-primary transition-all font-bold text-slate-900 dark:text-slate-900"
+                                value={additionalPrice}
+                                onChange={(e) => setAdditionalPrice(e.target.value)}
+                              />
+                              <p className="text-[9px] font-bold text-muted-foreground">Biaya ini akan ditambahkan ke pesanan pelanggan.</p>
+                           </div>
+                        )}
 
-                       <div className="flex justify-end pt-2">
-                          <Button 
-                            type="submit" 
-                            disabled={isActionLoading || newStatus === order.status}
-                            className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20"
-                          >
-                             {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ChevronRight className="w-4 h-4 mr-2" />}
-                             Perbarui Pesanan
-                          </Button>
-                       </div>
-                    </form>
+                         {order?.status === 'reviewed' && order?.payment_status !== 'success' && (
+                           <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-[10px] font-bold flex items-center gap-2">
+                              <AlertCircle className="w-4 h-4 shrink-0" />
+                              Menunggu pembayaran pelanggan selesai sebelum bisa lanjut ke Produksi.
+                           </div>
+                        )}
+
+                        <div className="space-y-3">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Catatan / Keterangan</label>
+                           <Textarea 
+                             placeholder="Tuliskan catatan kemajuan atau kendala... (Bisa paste gambar di layar ini)" 
+                             className="min-h-[100px] rounded-2xl bg-white dark:bg-white focus:bg-white border-2 border-slate-200 focus:border-primary text-slate-900 dark:text-slate-900 transition-all font-medium"
+                             value={note}
+                             onChange={(e) => setNote(e.target.value)}
+                           />
+                        </div>
+
+                        <div className="flex justify-end pt-2">
+                           <Button 
+                             type="submit" 
+                             disabled={isActionLoading || !getNextStatusInfo(order?.status) || (order?.status === 'reviewed' && order?.payment_status !== 'success') || !note.trim()}
+                             className="h-12 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20"
+                           >
+                              {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ChevronRight className="w-4 h-4 mr-2" />}
+                              Lanjut Proses
+                           </Button>
+                        </div>
+                     </form>
+
                  </CardContent>
               </Card>
 
@@ -411,7 +465,7 @@ export default function BackofficeOrderDetail() {
                                   }
                                </div>
                                {log.action === 'updated' && (
-                                 <div className="mt-4 grid grid-cols-2 gap-4">
+                                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="p-3 rounded-xl bg-red-50/50 border border-red-100/50 text-[10px]">
                                        <div className="font-black text-red-600 uppercase mb-2">Before</div>
                                        <pre className="whitespace-pre-wrap font-mono opacity-60 overflow-hidden text-ellipsis line-clamp-3">{JSON.stringify(log.before_data, null, 2)}</pre>
@@ -441,7 +495,7 @@ export default function BackofficeOrderDetail() {
                  <CardContent className="p-6 space-y-6">
                     <div className="space-y-1">
                        <div className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Total Transaksi</div>
-                       <div className="text-2xl font-black text-slate-900 tabular-nums">Rp {order.total_price.toLocaleString('id-ID')}</div>
+                       <div className="text-2xl font-black text-slate-900 tabular-nums">{order.total_price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</div>
                     </div>
 
                     <div className={cn(

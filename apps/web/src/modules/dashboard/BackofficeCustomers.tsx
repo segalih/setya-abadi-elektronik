@@ -225,7 +225,7 @@ export default function BackofficeCustomers() {
 
         {/* Detail Dialog */}
         <Dialog open={selectedCustomerId !== null} onOpenChange={(open: boolean) => !open && setSelectedCustomerId(null)}>
-           <DialogContent className="max-w-4xl p-0 border-none overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+           <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-4xl border-none shadow-2xl bg-slate-50/50">
               {isDetailLoading ? (
                  <div className="p-24 flex items-center justify-center flex-col gap-4">
                     <Loader2 className="w-12 h-12 animate-spin text-primary opacity-20" />
@@ -239,7 +239,7 @@ export default function BackofficeCustomers() {
                           <Users className="w-48 h-48 -mr-16 -mt-16" />
                        </div>
                        <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
-                          <div className="w-24 h-24 rounded-3xl bg-primary shadow-2xl shadow-primary/40 flex items-center justify-center text-4xl font-black text-white shrink-0 ring-8 ring-white/10">
+                           <div className="w-12 h-12 rounded-full bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-100/50 flex items-center justify-center shrink-0">
                              {customerDetail.name.charAt(0)}
                           </div>
                           <div className="space-y-4 pt-2">
@@ -271,8 +271,8 @@ export default function BackofficeCustomers() {
                           <div className="md:col-span-1 space-y-8">
                              <section className="space-y-4">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Registered Address</h4>
-                                <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
-                                   <CardContent className="p-6 space-y-4">
+                                <div className="bg-white rounded-4xl shadow-sm p-6 sm:p-10 relative overflow-hidden">
+                                   
                                       <div className="flex gap-4">
                                          <MapPin className="w-5 h-5 text-primary shrink-0 mt-1" />
                                          <div className="text-sm font-medium text-slate-600 leading-relaxed">
@@ -283,13 +283,12 @@ export default function BackofficeCustomers() {
                                             {customerDetail.address?.postal_code}
                                          </div>
                                       </div>
-                                   </CardContent>
-                                </Card>
+                                   </div>
                              </section>
 
                              <section className="space-y-4">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Business Stats</h4>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                    <div className="p-4 bg-white rounded-2xl shadow-sm space-y-1">
                                       <span className="text-[9px] font-black uppercase text-slate-400">Total Filings</span>
                                       <div className="text-xl font-black text-primary">{customerDetail.orders_count || 0}</div>
@@ -340,7 +339,7 @@ export default function BackofficeCustomers() {
                                                   {new Date(order.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
                                                </td>
                                                <td className="px-6 py-4 text-right font-black text-xs text-slate-700">
-                                                  Rp {order.total_price?.toLocaleString('id-ID')}
+                                                  {order.total_price?.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
                                                </td>
                                             </tr>
                                          )) : (

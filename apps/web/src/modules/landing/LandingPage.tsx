@@ -36,7 +36,7 @@ export default function LandingPage() {
         <main className="flex-1">
           {/* Hero Section */}
           <section className="relative py-20 md:py-32 overflow-hidden pcb-grid">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/50" />
+            <div className="absolute inset-0 bg-linear-to-b from-transparent to-background/50" />
             <div className="max-w-6xl mx-auto px-6 relative z-10 text-center">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -130,7 +130,7 @@ export default function LandingPage() {
                        { title: 'Tracking Real-time', text: 'Pantau status produksi PCB Anda melalui dashboard eksklusif.' },
                      ].map((adv, i) => (
                        <div key={i} className="flex gap-4 group">
-                          <div className="w-6 h-6 rounded-full bg-primary/20 flex-shrink-0 flex items-center justify-center mt-1 group-hover:bg-primary transition-colors">
+                          <div className="w-6 h-6 rounded-full bg-primary/20 shrink-0 flex items-center justify-center mt-1 group-hover:bg-primary transition-colors">
                              <CheckCircle2 className="w-4 h-4 text-primary group-hover:text-white" />
                           </div>
                           <div>
@@ -147,7 +147,7 @@ export default function LandingPage() {
                  className="relative"
                >
                   <div className="aspect-video bg-emerald-100/30 border-2 border-primary/20 rounded-md overflow-hidden shadow-2xl">
-                     <img src="https://picsum.photos/800/600?random=1" className="w-full h-full object-cover mix-blend-multiply opacity-80" alt="PCB" />
+                  <img src="https://placehold.co/800x600" className="w-full h-full object-cover mix-blend-multiply opacity-80" alt="PCB" />
                   </div>
                </motion.div>
             </div>
@@ -161,7 +161,7 @@ export default function LandingPage() {
                  <p className="text-muted-foreground">Hanya 3 langkah mudah untuk mewujudkan PCB Anda.</p>
               </div>
               <div className="grid md:grid-cols-3 gap-12 relative">
-                 <div className="hidden md:block absolute top-[22px] left-0 w-full h-0.5 bg-slate-100 -z-0" />
+                 <div className="hidden md:block absolute top-[22px] left-0 w-full h-0.5 bg-slate-100 z-0" />
                  {[
                    { step: '01', title: 'Upload File', desc: 'Unggah file Gerber atau skematik di dashboard kami.' },
                    { step: '02', title: 'Verifikasi', desc: 'Tim admin meninjau spesifikasi dan memberikan quote.' },
@@ -224,17 +224,24 @@ export default function LandingPage() {
           <section className="p-4 sm:p-12 lg:p-24">
              <motion.div 
                {...revealUp}
-               className="max-w-6xl mx-auto rounded-[3rem] bg-gradient-to-br from-primary to-secondary p-12 text-center text-white shadow-2xl shadow-primary/30 relative overflow-hidden"
+               className="max-w-6xl mx-auto rounded-[3rem] bg-linear-to-br from-primary to-secondary p-12 text-center text-white shadow-2xl shadow-primary/30 relative overflow-hidden"
              >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
                 <div className="relative z-10">
                    <h2 className="text-3xl lg:text-5xl font-black mb-6">Siap Mewujudkan <br />Inovasi Hardware Anda?</h2>
                    <p className="text-primary-foreground/90 mb-10 max-w-xl mx-auto font-medium">Buka akun sekarang dan nikmati kemudahan tracking produksi PCB Anda secara transparan.</p>
-                   <Link to="/register">
-                    <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-slate-50 animate-pulse-soft px-12">
-                      Daftar Sekarang — Gratis
-                    </Button>
-                   </Link>
+                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                     <Link to="/register">
+                      <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-slate-50 animate-pulse-soft w-full sm:w-auto px-12">
+                        Daftar Sekarang — Gratis
+                      </Button>
+                     </Link>
+                     <Link to="/login">
+                      <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20 hover:text-white w-full sm:w-auto px-12">
+                        Login ke Akun
+                      </Button>
+                     </Link>
+                   </div>
                 </div>
              </motion.div>
           </section>

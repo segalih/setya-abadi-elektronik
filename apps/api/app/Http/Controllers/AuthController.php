@@ -57,25 +57,18 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        // Trigger verification email via notification service
-        try {
-            $verificationToken = Str::random(64);
-            
-            EmailVerificationToken::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'token' => hash('sha256', $verificationToken),
-                    'expires_at' => Carbon::now()->addHours(24),
-                ]
-            );
+        // Trigger verification email via job
+        $verificationToken = Str::random(64);
+        
+        EmailVerificationToken::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'token' => hash('sha256', $verificationToken),
+                'expires_at' => Carbon::now()->addHours(24),
+            ]
+        );
 
-            Http::post(config('services.notification.url') . '/api/verification/send-email', [
-                'email' => $user->email,
-                'token' => $verificationToken,
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Failed to send verification email: " . $e->getMessage());
-        }
+        \App\Jobs\SendVerificationEmail::dispatch($user->email, $verificationToken);
 
         return response()->json([
             'message' => 'Registrasi berhasil. Silakan cek email Anda untuk verifikasi.',

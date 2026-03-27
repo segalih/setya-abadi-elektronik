@@ -47,7 +47,7 @@ export default function OrderCreatePage() {
   const [form, setForm] = useState({
     width: 10,
     height: 10,
-    quantity: 5,
+    quantity: 1,
     layers: 'single',
     material: 'FR4',
     masking_top: 'ya_hijau',
@@ -93,16 +93,24 @@ export default function OrderCreatePage() {
     if (productType === 'design' || productType === 'assembly') return 0;
     if (!pricingParams) return 0;
 
-    const area = form.width * form.height;
-    const basePricePerCm = form.layers === 'single' ? pricingParams.single_layer_price : pricingParams.double_layer_price;
-    let baseTotal = area * basePricePerCm;
+    // Minimum area is 100 cm2
+    const area = Math.max(form.width * form.height, 100);
+    let basePricePerCm = form.material === 'FR2' ? pricingParams.fr2_price : pricingParams.fr4_price;
+    
+    // Default multiplier is 1 for single
+    let multiplier = form.layers === 'single' ? 1 : pricingParams.double_layer_multiplier;
+    let baseTotal = area * basePricePerCm * multiplier;
+    
     let extras = 0;
 
-    if (form.masking_top !== 'tidak' || form.masking_bottom !== 'tidak') {
-      extras += baseTotal * (pricingParams.soldermask_percent / 100);
+    if (form.masking_top && form.masking_top !== 'tidak') {
+      extras += pricingParams.masking_price;
     }
-    if (form.silkscreen !== 'tidak') {
-      extras += baseTotal * (pricingParams.silkscreen_percent / 100);
+    if (form.masking_bottom && form.masking_bottom !== 'tidak') {
+      extras += pricingParams.masking_price;
+    }
+    if (form.silkscreen && form.silkscreen !== 'tidak') {
+      extras += pricingParams.silkscreen_price;
     }
 
     return Math.round((baseTotal + extras) * form.quantity);
@@ -339,7 +347,11 @@ export default function OrderCreatePage() {
                             </CardHeader>
                             <CardContent className="p-5 grid grid-cols-2 gap-3">
                               {[{ id: 'single', label: 'Single' }, { id: 'double', label: 'Double' }].map(l => (
-                                <button key={l.id} onClick={() => setForm({ ...form, layers: l.id })} className={cn(
+                                <button key={l.id} onClick={() => {
+                                  let updates: any = { layers: l.id };
+                                  if (l.id === 'single') updates.masking_top = 'tidak';
+                                  setForm({ ...form, ...updates });
+                                }} className={cn(
                                   "py-3 rounded-xl border-2 font-bold text-sm transition-none",
                                   form.layers === l.id ? "border-primary bg-primary/5 text-primary" : "border-slate-200 bg-white hover:border-slate-300"
                                 )}>
@@ -374,9 +386,10 @@ export default function OrderCreatePage() {
                             </CardHeader>
                             <CardContent className="p-5 space-y-2">
                               {MASKING_OPTIONS.map(opt => (
-                                <button key={opt.value} onClick={() => setForm({ ...form, masking_top: opt.value })} className={cn(
+                                <button key={opt.value} disabled={form.layers === 'single' && opt.value !== 'tidak'} onClick={() => setForm({ ...form, masking_top: opt.value })} className={cn(
                                   "w-full flex items-center gap-3 py-2.5 px-4 rounded-lg border-2 text-sm font-bold transition-none text-left",
-                                  form.masking_top === opt.value ? "border-primary bg-primary/5 text-primary" : "border-slate-100 bg-white hover:border-slate-200 text-slate-600"
+                                  form.masking_top === opt.value ? "border-primary bg-primary/5 text-primary" : "border-slate-100 bg-white hover:border-slate-200 text-slate-600",
+                                  form.layers === 'single' && opt.value !== 'tidak' && "opacity-40 cursor-not-allowed grayscale"
                                 )}>
                                   {opt.color && <span className="w-4 h-4 rounded-full border border-slate-300 shrink-0" style={{ backgroundColor: opt.color }} />}
                                   {opt.label}
@@ -701,7 +714,7 @@ export default function OrderCreatePage() {
                      </CardHeader>
                   <CardContent className="relative z-10 pt-6">
                     <div className="text-4xl font-black mb-1">
-                      {productType === 'pcb_print' ? `Rp ${estimatedPrice.toLocaleString('id-ID')}` : 'Rp 0'}
+                        {productType === 'pcb_print' ? estimatedPrice.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }) : 'Rp 0'}
                     </div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">
                       {productType === 'pcb_print'

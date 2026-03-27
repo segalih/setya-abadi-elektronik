@@ -137,14 +137,14 @@ export default function OrderDetailPage() {
         <main className="max-w-5xl mx-auto px-6 py-12 space-y-8">
            {/* Progress Timeline */}
            <Card className="border-none shadow-sm overflow-hidden mb-8">
-             <CardContent className="p-8">
-                <div className="relative flex justify-between items-start">
-                   <div className="absolute top-6 left-0 w-full h-1 bg-slate-100 rounded-full z-0" />
+             <CardContent className="p-4 sm:p-8 overflow-x-auto custom-scrollbar">
+                <div className="relative flex justify-between items-start min-w-[500px] mb-2 px-2">
+                   <div className="absolute top-8 left-0 w-full h-1 bg-slate-200 rounded-full z-0" />
                    <motion.div 
                      initial={{ width: 0 }}
                      animate={{ width: order.status === 'cancelled' || order.status === 'expired' ? '100%' : `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
                      transition={{ duration: 1.5, ease: "circOut" }}
-                     className={cn("absolute top-6 left-0 h-1 rounded-full z-10 shadow-sm", order.status === 'cancelled' || order.status === 'expired' ? "bg-red-500" : "bg-primary")} 
+                     className={cn("absolute top-8 left-0 h-1 rounded-full z-10 shadow-sm", order.status === 'cancelled' || order.status === 'expired' ? "bg-red-500" : "bg-primary")} 
                    />
 
                    {steps.map((step, i) => {
@@ -157,7 +157,8 @@ export default function OrderDetailPage() {
                        <div key={step.key} className="relative z-20 flex flex-col items-center gap-3 bg-slate-50/50 p-2 rounded-xl">
                           <motion.div 
                             initial={false}
-                            animate={isCurrent ? { scale: 1.2 } : { scale: 1 }}
+                            animate={isCurrent ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                            transition={isCurrent ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } : {}}
                             className={cn(
                               "w-12 h-12 rounded-full border-4 flex items-center justify-center transition-colors shadow-sm bg-white",
                               isPast && !isCancelled ? "border-primary text-primary" : 
@@ -197,16 +198,17 @@ export default function OrderDetailPage() {
                            {/* Big Payment Status Banner */}
                            <div className={cn(
                              "p-4 rounded-xl text-center font-black text-lg border-2",
+                             order.status === 'pending' ? "bg-slate-50 text-slate-500 border-slate-200 shadow-inner" :
                              isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
                              isExpired ? "bg-red-50 text-red-600 border-red-200" :
                              "bg-amber-50 text-amber-700 border-amber-200"
                            )}>
-                             {isPaid ? '✅ LUNAS' : isExpired ? '❌ KADALUARSA' : '⏳ BELUM LUNAS'}
+                             {order.status === 'pending' ? '⏳ MENUNGGU REVIEW ONGKIR' : isPaid ? '✅ LUNAS' : isExpired ? '❌ KADALUARSA' : '⏳ BELUM LUNAS'}
                            </div>
 
                            <div className="flex justify-between items-end">
                               <span className="text-xs font-bold text-muted-foreground uppercase">Total Tagihan</span>
-                              <span className="text-xl font-black">Rp {order.total_price?.toLocaleString('id-ID')}</span>
+                              <span className="text-xl font-black">{order.total_price?.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</span>
                            </div>
 
                            {order.payment_at && (
@@ -223,7 +225,7 @@ export default function OrderDetailPage() {
                            )}
 
                            {/* Midtrans Pay Button */}
-                           {order.payment_status === 'waiting' && order.status !== 'cancelled' && (
+                           {order.payment_status === 'waiting' && order.status !== 'cancelled' && order.status !== 'pending' && (
                              <div className="space-y-3 pt-2">
                                 <Button
                                   onClick={handleMidtransPayment}
@@ -360,12 +362,18 @@ export default function OrderDetailPage() {
                                     {update.images && update.images.length > 0 && (
                                       <div className="flex gap-2 mt-4">
                                          {update.images.map((img: string, idx: number) => (
-                                           <div key={idx} className="relative group overflow-hidden rounded-xl border border-slate-100 shadow-sm">
-                                              <img src={api.defaults.baseURL?.replace('/api', '') + '/storage/' + img} className="w-20 h-20 object-cover transition-transform group-hover:scale-110" alt="Update Evidence" />
-                                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
-                                                 <Eye className="w-4 h-4 text-white" />
-                                              </div>
-                                           </div>
+                                            <a 
+                                              key={idx} 
+                                              href={api.defaults.baseURL?.replace('/api', '') + '/storage/' + img}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="relative group overflow-hidden rounded-xl border border-slate-100 shadow-sm block"
+                                            >
+                                               <img src={api.defaults.baseURL?.replace('/api', '') + '/storage/' + img} className="w-20 h-20 object-cover transition-transform group-hover:scale-110" alt="Update Evidence" />
+                                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+                                                  <Eye className="w-4 h-4 text-white" />
+                                               </div>
+                                            </a>
                                          ))}
                                       </div>
                                     )}

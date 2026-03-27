@@ -31,15 +31,8 @@ class VerificationController extends Controller
             ]
         );
 
-        // Call Notification Service
-        try {
-            Http::post(config('services.notification.url') . '/api/verification/send-email', [
-                'email' => $user->email,
-                'token' => $token,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to send verification email'], 500);
-        }
+        // Queue Notification Service via Job
+        \App\Jobs\SendVerificationEmail::dispatch($user->email, $token);
 
         return response()->json(['message' => 'Verification email sent']);
     }
