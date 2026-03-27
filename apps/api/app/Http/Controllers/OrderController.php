@@ -68,10 +68,11 @@ class OrderController extends Controller
      */
     public function getPriorityOrders(Request $request)
     {
-        $cutoff = now()->subHours(24);
+        $cutoff = now()->subHours(36);
         
         $orders = Order::with(['user', 'detail'])
             ->whereIn('status', ['pending', 'reviewed', 'in_production'])
+            ->whereIn('payment_status', ['waiting', 'pending'])
             ->where('updated_at', '<', $cutoff)
             ->latest()
             ->get();

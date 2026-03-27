@@ -10,9 +10,8 @@ import {
   Cpu, 
   Bell, 
   Menu, 
-  PanelLeftClose,
-  PanelLeftOpen,
   ChevronRight,
+  ChevronLeft,
   User as UserIcon
 } from 'lucide-react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
@@ -93,21 +92,41 @@ export default function BackofficeLayout() {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 lg:relative bg-white border-r border-slate-200 h-screen flex flex-col transition-all duration-300 shadow-xl lg:shadow-none lg:translate-x-0 overflow-hidden",
+        "fixed inset-y-0 left-0 z-50 lg:relative bg-white border-r border-slate-200 h-screen flex flex-col transition-all duration-300 shadow-xl lg:shadow-none lg:translate-x-0",
         isSidebarOpen ? "w-72 translate-x-0" : "w-72 -translate-x-full lg:w-24 lg:translate-x-0"
       )}>
-        <div className="flex items-center gap-3 h-20 px-6 border-b border-slate-100 shrink-0">
+        <div className={cn(
+          "flex items-center h-20 px-6 border-b border-slate-100 shrink-0 transition-all duration-300",
+          isSidebarOpen ? "justify-start gap-3" : "justify-center"
+        )}>
           <div className="p-2.5 rounded-xl bg-primary shadow-lg shadow-primary/20 shrink-0">
             <Cpu className="w-6 h-6 text-white" />
           </div>
           <AnimatePresence>
             {isSidebarOpen && (
-              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-black tracking-tight text-lg whitespace-nowrap">
+              <motion.span 
+                initial={{ opacity: 0, x: -10 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                exit={{ opacity: 0, x: -10 }} 
+                className="font-black tracking-tight text-lg whitespace-nowrap overflow-hidden"
+              >
                 SETYA ABADI
               </motion.span>
             )}
           </AnimatePresence>
         </div>
+
+        {/* Floating Toggle Button */}
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className={cn(
+            "absolute -right-3 top-7 h-6 w-6 rounded-full bg-white border border-slate-200 shadow-sm z-50 hidden lg:flex items-center justify-center hover:bg-slate-50 hover:border-primary/30 text-slate-400 hover:text-primary transition-all duration-300 group cursor-pointer",
+            !isSidebarOpen && "rotate-180"
+          )}
+          title={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+        >
+          <ChevronLeft className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+        </button>
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-6">
           {navigation.map((group) => (
@@ -190,11 +209,8 @@ export default function BackofficeLayout() {
       <div className="flex-1 flex flex-col min-w-0 h-screen bg-slate-50">
         <header className="flex items-center justify-between h-20 px-6 lg:px-10 bg-white border-b border-slate-100 shrink-0">
            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="rounded-xl h-10 w-10 hover:bg-slate-50 hidden lg:flex">
-                {isSidebarOpen ? <PanelLeftClose className="w-5 h-5 text-slate-400" /> : <PanelLeftOpen className="w-5 h-5 text-slate-400" />}
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="rounded-xl h-10 w-10 hover:bg-slate-50 lg:hidden">
-                <Menu className="w-5 h-5 text-slate-700" />
+              <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="rounded-xl h-10 w-10 hover:bg-slate-50 lg:hidden text-slate-700">
+                <Menu className="w-5 h-5" />
               </Button>
            </div>
            

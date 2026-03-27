@@ -48,7 +48,7 @@ export default function BackofficeDashboard() {
       const [healthResp, ordersResp, logsResp, priorityResp] = await Promise.all([
         api.get('/health').catch(() => ({ data: { status: 'down' } })),
         api.get('/backoffice/orders?limit=10'),
-        api.get(`/backoffice/audit-logs?limit=5&page=${logsPage}`),
+        api.get(`/backoffice/audit-logs?limit=10&page=${logsPage}`),
         api.get('/backoffice/orders/priority')
       ]);
       
