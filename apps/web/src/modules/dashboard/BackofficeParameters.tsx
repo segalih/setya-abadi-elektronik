@@ -102,7 +102,7 @@ export default function BackofficeParameters() {
         <div className="lg:col-span-2 space-y-8">
           {/* Pricing Parameters */}
           <Card className="border-none shadow-sm overflow-hidden rounded-[2.5rem] bg-white group hover:shadow-xl transition-all duration-500">
-            <div className="h-3 w-full bg-gradient-to-r from-primary to-slate-900" />
+            <div className="h-3 w-full bg-linear-to-r from-primary to-slate-900" />
             <CardHeader className="p-10 pb-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -152,7 +152,7 @@ export default function BackofficeParameters() {
                 </div>
               </div>
 
-              <div className="p-6 rounded-[1.5rem] bg-amber-50 border border-amber-100 flex gap-4">
+              <div className="p-6 rounded-3xl bg-amber-50 border border-amber-100 flex gap-4">
                 <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
                 <div>
                   <h5 className="text-[10px] font-black uppercase tracking-widest text-amber-900 mb-1">Financial Impact Warning</h5>

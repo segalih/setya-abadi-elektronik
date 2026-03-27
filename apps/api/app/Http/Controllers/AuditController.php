@@ -42,6 +42,7 @@ class AuditController extends Controller
             $query->whereDate('created_at', '<=', $request->end_date);
         }
 
-        return response()->json($query->paginate($request->get('per_page', 50)));
+        $perPage = $request->get('limit', $request->get('per_page', 50));
+        return response()->json($query->paginate($perPage));
     }
 }

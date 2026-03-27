@@ -1,11 +1,21 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Cpu, Printer, Palette, Box, CheckCircle2, Star, HelpCircle, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Cpu, Printer, Palette, Box, CheckCircle2, Star, HelpCircle, ArrowRight, LogOut, LayoutDashboard, UserCircle } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import MotionPage, { revealUp, staggerContainer } from '@/components/shared/MotionWrapper';
 
 export default function LandingPage() {
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <MotionPage>
       <div className="flex flex-col min-h-screen">
@@ -24,12 +34,34 @@ export default function LandingPage() {
             <a href="#faq" className="hover:text-primary transition-colors">FAQ</a>
           </nav>
           <div className="flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Login</Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm">Mulai Sekarang</Button>
-            </Link>
+            {user ? (
+               <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                     <Button variant="ghost" size="icon" className="rounded-full bg-slate-100 hover:bg-slate-200 p-0 overflow-hidden text-slate-500">
+                        {user.name ? <div className="font-black text-sm uppercase bg-primary text-white w-full h-full flex items-center justify-center">{user.name.charAt(0)}</div> : <UserCircle className="w-6 h-6" />}
+                     </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 font-medium">
+                     <DropdownMenuItem className="cursor-pointer" onClick={() => navigate(user.role?.name === 'admin' || user.role?.name === 'supervisor' || user.role?.name === 'staff' ? '/backoffice' : '/dashboard')}>
+                        <LayoutDashboard className="w-4 h-4 mr-2 text-primary" />
+                        Dashboard
+                     </DropdownMenuItem>
+                     <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-50 focus:text-red-600 font-bold cursor-pointer">
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                     </DropdownMenuItem>
+                  </DropdownMenuContent>
+               </DropdownMenu>
+            ) : (
+               <>
+                  <Link to="/login">
+                    <Button variant="ghost" size="sm" className="text-slate-700 hover:text-primary hover:bg-slate-100">Login</Button>
+                  </Link>
+                  <Link to="/order/create">
+                    <Button size="sm" className="shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">Mulai Sekarang</Button>
+                  </Link>
+               </>
+            )}
           </div>
         </header>
 
@@ -56,7 +88,7 @@ export default function LandingPage() {
                 membangun perangkat elektronik berkualitas tinggi.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/register">
+                <Link to="/order/create">
                   <Button size="lg" className="shadow-lg shadow-primary/25 group">
                     Buat Pesanan Baru
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 " />

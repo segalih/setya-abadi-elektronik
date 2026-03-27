@@ -14,15 +14,17 @@ import {
   AlertCircle,
   Truck,
   Box,
-  Eye
+   Eye,
+   RefreshCw
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import MotionPage from '@/components/shared/MotionWrapper';
 import { Badge } from '@/components/ui/badge';
 import api from '@/services/api';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 export default function BackofficeOrders() {
   const navigate = useNavigate();
@@ -30,8 +32,10 @@ export default function BackofficeOrders() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+   const [paymentFilter, setPaymentFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+   const [totalRecords, setTotalRecords] = useState(0);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -40,11 +44,13 @@ export default function BackofficeOrders() {
         params: { 
           page, 
           search: searchTerm, 
-          status: statusFilter === 'all' ? undefined : statusFilter 
+            status: statusFilter === 'all' ? undefined : statusFilter,
+            payment_status: paymentFilter === 'all' ? undefined : paymentFilter
         }
       });
       setOrders(response.data.data);
       setTotalPages(response.data.last_page);
+       setTotalRecords(response.data.total);
     } catch (err) {
       console.error('Failed to fetch backoffice orders', err);
     } finally {
@@ -54,7 +60,7 @@ export default function BackofficeOrders() {
 
   useEffect(() => {
     fetchOrders();
-  }, [page, statusFilter]);
+  }, [page, statusFilter, paymentFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,26 +113,43 @@ export default function BackofficeOrders() {
                  onChange={(e) => setSearchTerm(e.target.value)}
                />
             </form>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-               <div className="relative w-full md:w-48">
-                  <Filter className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                  <select 
-                    className="w-full h-12 pl-10 pr-4 bg-slate-50 border-none rounded-md text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                     <option value="all">Semua Status</option>
-                     <option value="pending">Pending</option>
-                     <option value="reviewed">Ditinjau</option>
-                     <option value="in_production">Produksi</option>
-                     <option value="ready_to_ship">Siap Kirim</option>
-                     <option value="shipped">Dikirim</option>
-                  </select>
-               </div>
-               <Button onClick={fetchOrders} className="h-12 w-12 rounded-md bg-white border-2 text-primary hover:bg-primary hover:text-white transition-none shadow-none">
-                  <Loader2 className={cn("w-5 h-5", isLoading && "animate-spin")} />
-               </Button>
-            </div>
+              <div className="flex items-center gap-2 w-full md:w-auto mt-4 md:mt-0">
+                 <div className="relative w-full md:min-w-[140px]">
+                    <Filter className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                    <select
+                       className="w-full h-12 pl-10 pr-4 bg-slate-50 border-none rounded-md text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20"
+                       value={statusFilter}
+                       onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                       <option value="all">Status</option>
+                       <option value="pending">Pending</option>
+                       <option value="reviewed">Ditinjau</option>
+                       <option value="in_production">Produksi</option>
+                       <option value="ready_to_ship">Siap Kirim</option>
+                       <option value="shipped">Dikirim</option>
+                    </select>
+                 </div>
+                 <div className="relative w-full md:min-w-[140px]">
+                    <Clock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                    <select
+                       className="w-full h-12 pl-10 pr-4 bg-slate-50 border-none rounded-md text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20"
+                       value={paymentFilter}
+                       onChange={(e) => setPaymentFilter(e.target.value)}
+                    >
+                       <option value="all">Bayar</option>
+                       <option value="waiting">Waiting</option>
+                       <option value="success">Success</option>
+                       <option value="expired">Expired</option>
+                    </select>
+                 </div>
+                 <Button
+                    size="icon"
+                    onClick={fetchOrders}
+                    className="h-12 w-12 shrink-0 rounded-md bg-white border-2 border-slate-200 text-slate-400 hover:text-primary hover:border-primary/20 transition-all shadow-none hover:bg-white-100"
+                 >
+                    <RefreshCw className={cn("w-6 h-6", isLoading && "animate-spin")} />
+                 </Button>
+              </div>
          </CardContent>
       </Card>
 
@@ -141,9 +164,11 @@ export default function BackofficeOrders() {
                      <thead>
                         <tr className="bg-slate-50/50 border-b text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                            <th className="p-6">ID Pesanan</th>
+                                <th className="p-6 text-center">Tgl Order</th>
+                                <th className="p-6 text-center">Tgl Bayar</th>
                            <th className="p-6">Pelanggan</th>
                            <th className="p-6">Produk / Specs</th>
-                           <th className="p-6">Total Tagihan</th>
+                                <th className="p-6 text-right">Total Tagihan</th>
                            <th className="p-6">Status</th>
                            <th className="p-6 text-right">Aksi</th>
                         </tr>
@@ -163,7 +188,20 @@ export default function BackofficeOrders() {
                            >
                               <td className="p-6">
                                  <div className="font-black text-slate-900 group-hover:text-primary transition-colors">#{order.order_number}</div>
-                                 <div className="text-[10px] font-bold text-muted-foreground uppercase">{new Date(order.created_at).toLocaleDateString()}</div>
+                              </td>
+                              <td className="p-6 text-center">
+                                 <div className="text-[11px] font-black text-slate-600 uppercase">{new Date(order.created_at).toLocaleDateString()}</div>
+                                 <div className="text-[9px] font-bold text-slate-400">{new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                              </td>
+                              <td className="p-6 text-center">
+                                 {order.payment_at ? (
+                                    <>
+                                       <div className="text-[11px] font-black text-emerald-600 uppercase">{new Date(order.payment_at).toLocaleDateString()}</div>
+                                       <div className="text-[9px] font-bold text-emerald-400">{new Date(order.payment_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                    </>
+                                 ) : (
+                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-tighter">— BELUM —</span>
+                                 )}
                               </td>
                               <td className="p-6">
                                  <div className="flex items-center gap-3">
@@ -183,7 +221,7 @@ export default function BackofficeOrders() {
                                  </div>
                               </td>
                               <td className="p-6">
-                                 <div className="font-black text-slate-900">{order.total_price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</div>
+                                 <div className="font-black text-slate-900">{formatCurrency(order.total_price || 0)}</div>
                                  <Badge variant="outline" className={cn(
                                    "text-[9px] font-black uppercase tracking-tighter mt-1",
                                    order.payment_status === 'success' ? "text-emerald-500 border-emerald-100" : "text-amber-500 border-amber-100"
@@ -218,7 +256,7 @@ export default function BackofficeOrders() {
             
             {/* Pagination */}
             <div className="p-6 bg-slate-50/50 border-t flex items-center justify-between">
-               <span className="text-xs text-muted-foreground font-bold">Showing {orders.length} of overall records</span>
+                 <span className="text-xs text-muted-foreground font-bold">Showing {orders.length} of {totalRecords} overall records</span>
                <div className="flex items-center gap-2">
                   <Button 
                     variant="outline" 

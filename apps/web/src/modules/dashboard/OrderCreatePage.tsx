@@ -49,10 +49,10 @@ export default function OrderCreatePage() {
     height: 10,
     quantity: 1,
     layers: 'single',
-    material: 'FR4',
-    masking_top: 'ya_hijau',
-    masking_bottom: 'ya_hijau',
-    silkscreen: 'ya_putih',
+    material: 'FR2',
+    masking_top: 'tidak',
+    masking_bottom: 'tidak',
+    silkscreen: 'tidak',
     board_shape: 'kotak',
     design_description: '',
     component_count: 50,
@@ -87,6 +87,22 @@ export default function OrderCreatePage() {
       }
     };
     fetchPricing();
+
+    const savedData = localStorage.getItem('pending_order_data');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed.form) setForm(prev => ({ ...prev, ...parsed.form }));
+        if (parsed.productType) setProductType(parsed.productType);
+        if (parsed.useCustomAddress !== undefined) setUseCustomAddress(parsed.useCustomAddress);
+        if (parsed.address) formikAddress.setValues(parsed.address);
+
+        localStorage.removeItem('pending_order_data');
+        addToast({ title: 'Data Dipulihkan', description: 'Draf pesanan Anda telah dipulihkan. Silakan upload file Gerber untuk melanjutkan.' });
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }, []);
 
   const calculatePrice = () => {
@@ -141,6 +157,19 @@ export default function OrderCreatePage() {
       return;
     }
 
+    if (!user) {
+      const { file, ...formWithoutFile } = form;
+      localStorage.setItem('pending_order_data', JSON.stringify({
+        form: formWithoutFile,
+        productType,
+        useCustomAddress,
+        address: formikAddress.values
+      }));
+      addToast({ title: 'Simpan Sementara', description: 'Silakan mendaftar atau login untuk melanjutkan pesanan Anda.' });
+      navigate('/register');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('product_type', productType);
     formData.append('total_price', estimatedPrice.toString());
@@ -185,8 +214,8 @@ export default function OrderCreatePage() {
     <MotionPage>
       <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 pcb-grid relative overflow-hidden pb-32">
         <div className="max-w-5xl mx-auto space-y-8">
-          <Button variant="outline" onClick={() => navigate('/dashboard')} className="bg-white flex items-center gap-2 w-fit">
-            <ArrowLeft className="w-4 h-4" /> Kembali ke Dashboard
+          <Button variant="outline" onClick={() => window.history.back()} className="bg-white flex items-center gap-2 w-fit">
+            <ArrowLeft className="w-4 h-4" /> Kembali
           </Button>
 
           {/* Header & Steps */}

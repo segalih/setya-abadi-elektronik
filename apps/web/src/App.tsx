@@ -40,14 +40,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/order/create" 
-            element={
-              <ProtectedRoute>
-                <OrderCreatePage />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/order/create" element={<OrderCreatePage />} />
           <Route 
             path="/order/:id" 
             element={

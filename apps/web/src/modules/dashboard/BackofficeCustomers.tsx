@@ -125,7 +125,7 @@ export default function BackofficeCustomers() {
                     transition={{ delay: i * 0.05 }}
                   >
                      <Card className="border-none shadow-sm hover:shadow-2xl transition-all duration-300 group overflow-hidden rounded-3xl cursor-pointer" onClick={() => fetchCustomerDetail(customer.id)}>
-                        <div className="h-2 w-full bg-gradient-to-r from-primary to-slate-900" />
+                        <div className="h-2 w-full bg-linear-to-r from-primary to-slate-900" />
                         <CardContent className="p-8">
                            <div className="flex items-start justify-between mb-8">
                               <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
@@ -194,7 +194,7 @@ export default function BackofficeCustomers() {
       </div>
 
         {/* Pagination Controls */}
-        <div className="p-8 bg-white border-2 border-slate-100 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+        <div className="p-8 bg-white border-2 border-slate-100 rounded-4xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
            <div className="text-xs font-black uppercase tracking-widest text-slate-400">
               Showing <span className="text-slate-900">{customers.length}</span> of <span className="text-slate-900">{totalRecords}</span> members
            </div>

@@ -35,6 +35,10 @@ class OrderController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->has('payment_status') && $request->payment_status !== 'all') {
+            $query->where('payment_status', $request->payment_status);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -57,6 +61,22 @@ class OrderController extends Controller
 
         $perPage = $request->input('limit', 10);
         return response()->json($query->paginate($perPage));
+    }
+
+    /**
+     * Get priority orders (stuck for > 24 hours).
+     */
+    public function getPriorityOrders(Request $request)
+    {
+        $cutoff = now()->subHours(24);
+        
+        $orders = Order::with(['user', 'detail'])
+            ->whereIn('status', ['pending', 'reviewed', 'in_production'])
+            ->where('updated_at', '<', $cutoff)
+            ->latest()
+            ->get();
+
+        return response()->json($orders);
     }
 
     /**

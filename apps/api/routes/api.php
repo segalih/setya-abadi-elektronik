@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Backoffice (Staff & Supervisor) routes
     Route::group(['prefix' => 'backoffice', 'middleware' => 'role:staff,supervisor'], function () {
+        Route::get('orders/priority', [OrderController::class, 'getPriorityOrders']);
         Route::get('orders', [OrderController::class, 'allOrders']);
         Route::get('orders/{id}', [OrderController::class, 'show']);
         Route::get('orders/{id}/audit-logs', [OrderController::class, 'orderAuditLogs']);

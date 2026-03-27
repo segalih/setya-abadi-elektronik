@@ -162,12 +162,12 @@ export default function BackofficeLayout() {
               <Button
                 variant="outline" 
                 className={cn(
-                  "w-full text-red-500 border-red-500/20 hover:bg-red-50 hover:text-red-700 hover:border-red-500/50 rounded-xl",
-                  isSidebarOpen ? "h-12 justify-center gap-2" : "h-12 px-0 flex items-center justify-center"
+                  "w-full text-red-500 border-red-500/20 hover:bg-red-50 hover:text-red-700 hover:border-red-500/50 rounded-xl transition-all",
+                  isSidebarOpen ? "h-12 justify-start px-4 gap-3" : "h-12 px-0 flex items-center justify-center"
                 )}
               >
-                <LogOut className={cn("shrink-0 w-4 h-4")} />
-                {isSidebarOpen && <span className="font-bold text-xs uppercase tracking-widest">Logout</span>}
+                <LogOut className={cn("shrink-0 w-5 h-5")} />
+                {isSidebarOpen && <span className="font-bold text-sm">Logout</span>}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="rounded-2xl p-8 border-none shadow-2xl">
@@ -179,7 +179,7 @@ export default function BackofficeLayout() {
               </AlertDialogHeader>
               <AlertDialogFooter className="mt-6 gap-3 sm:gap-0">
                 <AlertDialogCancel className="rounded-xl border-none bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold h-11 px-6">Batal</AlertDialogCancel>
-                <AlertDialogAction onClick={logout} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-11 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
+                <AlertDialogAction onClick={() => { logout(); navigate('/'); }} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-11 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -252,7 +252,7 @@ export default function BackofficeLayout() {
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-6 gap-3 sm:gap-0">
                   <AlertDialogCancel className="rounded-xl border-none bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold h-11 px-6">Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={logout} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-11 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
+                  <AlertDialogAction onClick={() => { logout(); navigate('/'); }} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-11 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

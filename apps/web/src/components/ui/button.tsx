@@ -43,7 +43,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <motion.div
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.98 }}
-        className="inline-block"
+        className={cn(
+          "inline-block", 
+          className?.toString().includes("w-full") ? "w-full" : "",
+          className?.toString().includes("flex-1") ? "flex-1" : ""
+        )}
       >
         <Comp
           className={cn(buttonVariants({ variant, size, className }))}

@@ -52,7 +52,9 @@ export default function LoginPage() {
         setAuth(userData, data.token);
         queryClient.invalidateQueries({ queryKey: ['me'] }); // cache invalidation
         
-        if (userData?.role?.name === 'admin' || userData?.role?.name === 'supervisor' || userData?.role?.name === 'staff') {
+        if (localStorage.getItem('pending_order_data')) {
+           navigate('/order/create');
+        } else if (userData?.role?.name === 'admin' || userData?.role?.name === 'supervisor' || userData?.role?.name === 'staff') {
           navigate('/backoffice');
         } else {
           navigate('/dashboard');

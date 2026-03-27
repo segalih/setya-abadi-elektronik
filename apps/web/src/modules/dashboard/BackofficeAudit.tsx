@@ -258,7 +258,7 @@ export default function BackofficeAudit() {
                         <FileSearch className="w-64 h-64 -mr-20 -mt-20" />
                      </div>
                      <div className="flex items-center gap-6 relative z-10">
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary">
                            <FileSearch className="w-8 h-8" />
                         </div>
                         <div>
@@ -281,7 +281,7 @@ export default function BackofficeAudit() {
                   <div className="p-10 overflow-y-auto flex-1 bg-slate-50/50">
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
                         {/* Before Data */}
-                        <div className="bg-white border border-slate-100 rounded-[2rem] p-8 flex flex-col h-full shadow-sm">
+                        <div className="bg-white border border-slate-100 rounded-4xl p-8 flex flex-col h-full shadow-sm">
                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-red-500 tracking-[0.2em] mb-6 pb-4 border-b">
                               <div className="w-2 h-2 rounded-full bg-red-500" /> Pre-Mutation State
                            </div>
@@ -291,7 +291,7 @@ export default function BackofficeAudit() {
                         </div>
                         
                         {/* After Data */}
-                        <div className="bg-white border border-slate-100 rounded-[2rem] p-8 flex flex-col h-full shadow-sm">
+                        <div className="bg-white border border-slate-100 rounded-4xl p-8 flex flex-col h-full shadow-sm">
                            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-emerald-500 tracking-[0.2em] mb-6 pb-4 border-b">
                               <div className="w-2 h-2 rounded-full bg-emerald-500" /> Post-Mutation Delta
                            </div>

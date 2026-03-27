@@ -36,9 +36,39 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogClose
+} from '@/components/ui/dialog';
 import MotionPage from '@/components/shared/MotionWrapper';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import api from '@/services/api';
+
+// Internal component for stable Object URL preview
+function FilePreviewItem({ file, onClick }: { file: File, onClick: () => void }) {
+  const [url, setUrl] = useState('');
+  
+  useEffect(() => {
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+
+  if (!url) return null;
+
+  return (
+    <div className="relative group w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-200 cursor-pointer" onClick={onClick}>
+      <img src={url} alt="Preview" className="w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+         <Eye className="w-4 h-4 text-white" />
+      </div>
+    </div>
+  );
+}
 
 export default function BackofficeOrderDetail() {
   const { id } = useParams();
@@ -49,11 +79,12 @@ export default function BackofficeOrderDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   
-  // Status Update State
+   // Status Update State
   const [newStatus, setNewStatus] = useState('');
   const [note, setNote] = useState('');
   const [additionalPrice, setAdditionalPrice] = useState('');
   const [files, setFiles] = useState<FileList | null>(null);
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<{ url: string, title?: string } | null>(null);
 
   const fetchOrder = async () => {
     try {
@@ -132,6 +163,7 @@ export default function BackofficeOrderDetail() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setNote('');
+      setFiles(null);
       fetchOrder();
       addToast({
         title: "Sukses",
@@ -204,12 +236,12 @@ export default function BackofficeOrderDetail() {
              <CardContent className="p-4 sm:p-8 overflow-x-auto custom-scrollbar">
                 <div className="relative flex justify-between items-start min-w-[500px] pb-4 px-2">
                    {/* Background Line */}
-                   <div className="absolute top-6 left-0 w-full h-1 bg-slate-100 rounded-full z-0" />
+                   <div className="absolute top-8 left-0 w-full h-1 bg-slate-100 rounded-full z-0" />
                    <motion.div 
                      initial={{ width: 0 }}
                      animate={{ width: order.status === 'cancelled' || order.status === 'expired' ? '100%' : `${(currentStepIndex / (steps.filter(s => s.key !== 'cancelled').length - 1)) * 100}%` }}
                      transition={{ duration: 1.5, ease: "circOut" }}
-                     className={cn("absolute top-6 left-0 h-1 rounded-full z-10 shadow-sm transition-colors", order.status === 'cancelled' || order.status === 'expired' ? "bg-red-500" : "bg-primary")} 
+                     className={cn("absolute top-8 left-0 h-1 rounded-full z-10 shadow-sm transition-colors", order.status === 'cancelled' || order.status === 'expired' ? "bg-red-500" : "bg-primary")} 
                    />
 
                    {steps.filter(s => s.key !== 'cancelled').map((step, i) => {
@@ -335,23 +367,41 @@ export default function BackofficeOrderDetail() {
                               <div className="relative h-12 w-full overflow-hidden rounded-xl border-2 border-dashed border-slate-300 hover:border-primary/50 transition-colors flex items-center px-4 gap-3 bg-white">
                                  <Upload className="w-4 h-4 text-slate-400" />
                                  <span className="text-[10px] font-bold text-slate-500 truncate">{files ? `${files.length} file dipilih` : 'Klik atau paste foto...'}</span>
-                                 <input 
-                                   type="file" 
-                                   multiple 
-                                   className="absolute inset-0 opacity-0 cursor-pointer" 
-                                   onChange={(e) => {
-                                      const dataTransfer = new DataTransfer();
-                                      if (e.target.files) {
-                                         Array.from(e.target.files).forEach(f => dataTransfer.items.add(f));
-                                      }
-                                      if (files) {
-                                         Array.from(files).forEach(f => dataTransfer.items.add(f));
-                                      }
-                                      setFiles(dataTransfer.files);
-                                   }}
-                                 />
-                              </div>
-                           </div>
+                               <input 
+                                 type="file" 
+                                 multiple 
+                                 accept="image/*"
+                                 className="absolute inset-0 opacity-0 cursor-pointer" 
+                                 onChange={(e) => {
+                                    if (e.target.files && e.target.files.length > 0) {
+                                       setFiles(e.target.files);
+                                    }
+                                 }}
+                               />
+                            </div>
+
+                            {/* Image Preview Thumbnails */}
+                            {files && files.length > 0 && (
+                               <div className="mt-3 p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 flex flex-wrap gap-3">
+                                  {Array.from(files).map((file, idx) => (
+                                     <FilePreviewItem 
+                                       key={idx} 
+                                       file={file} 
+                                       onClick={() => setSelectedPreviewImage({ url: URL.createObjectURL(file), title: file.name })} 
+                                     />
+                                  ))}
+                                  <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => setFiles(null)}
+                                    className="h-16 px-4 rounded-xl text-[10px] font-black uppercase text-red-500 hover:bg-red-50 hover:text-red-600 border-2 border-dashed border-red-100"
+                                  >
+                                     Reset
+                                  </Button>
+                               </div>
+                            )}
+                         </div>
                         </div>
                         
                         {order?.status === 'pending' && (
@@ -428,14 +478,21 @@ export default function BackofficeOrderDetail() {
                                   <p className="text-sm font-medium text-slate-700 italic">"{up.note || 'Pembaruan otomatis sistem'}"</p>
                                   {up.images?.length > 0 && (
                                     <div className="flex gap-3 pt-2">
-                                       {up.images.map((img: string, idx: number) => (
-                                         <div key={idx} className="relative group/img w-24 h-24 rounded-2xl overflow-hidden border border-slate-100 shadow-sm cursor-pointer">
-                                            <img src={api.defaults.baseURL?.replace('/api', '') + '/storage/' + img} className="w-full h-full object-cover transition-transform group-hover/img:scale-110" alt="Update Trace" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
-                                               <Eye className="w-5 h-5 text-white" />
+                                       {up.images.map((img: string, idx: number) => {
+                                          const fullUrl = api.defaults.baseURL?.replace('/api', '') + '/storage/' + img;
+                                          return (
+                                            <div 
+                                              key={idx} 
+                                              onClick={() => setSelectedPreviewImage({ url: fullUrl, title: `Update Evidence - ${up.status}` })}
+                                              className="relative group/img w-24 h-24 rounded-2xl overflow-hidden border border-slate-100 shadow-sm cursor-pointer"
+                                            >
+                                               <img src={fullUrl} className="w-full h-full object-cover transition-transform group-hover/img:scale-110" alt="Update Trace" />
+                                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
+                                                  <Eye className="w-5 h-5 text-white" />
+                                               </div>
                                             </div>
-                                         </div>
-                                       ))}
+                                          );
+                                       })}
                                     </div>
                                   )}
                                </div>
@@ -495,7 +552,7 @@ export default function BackofficeOrderDetail() {
                  <CardContent className="p-6 space-y-6">
                     <div className="space-y-1">
                        <div className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Total Transaksi</div>
-                       <div className="text-2xl font-black text-slate-900 tabular-nums">{order.total_price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</div>
+                       <div className="text-2xl font-black text-slate-900 tabular-nums">{formatCurrency(order.total_price)}</div>
                     </div>
 
                     <div className={cn(
@@ -616,6 +673,41 @@ export default function BackofficeOrderDetail() {
            </div>
         </div>
       </div>
+
+      {/* Image Preview Modal (Lightbox) */}
+      <Dialog open={!!selectedPreviewImage} onOpenChange={(open) => !open && setSelectedPreviewImage(null)}>
+         <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border-none shadow-2xl">
+            <DialogHeader className="sr-only">
+               <DialogTitle>{selectedPreviewImage?.title || 'Image Preview'}</DialogTitle>
+            </DialogHeader>
+            <div className="relative w-full h-full flex flex-col">
+               <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
+                  <Badge className="bg-primary text-white font-black stroke-1 drop-shadow-md border-0 px-2 py-0.5 text-[9px] uppercase tracking-widest">
+                     Photo Evidence
+                  </Badge>
+                  {selectedPreviewImage?.title && (
+                    <span className="text-[10px] font-bold text-white/50 bg-black/20 backdrop-blur-md px-2 py-0.5 rounded-full lowercase truncate max-w-[200px]">
+                       {selectedPreviewImage.title}
+                    </span>
+                  )}
+               </div>
+               <div className="p-8 pb-12 flex items-center justify-center min-h-[50vh] max-h-[85vh]">
+                  {selectedPreviewImage && (
+                    <img 
+                      src={selectedPreviewImage.url} 
+                      alt="Lightbox Preview" 
+                      className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in duration-300"
+                    />
+                  )}
+               </div>
+               <div className="absolute bottom-4 right-4 flex gap-2">
+                  <Button variant="outline" size="sm" className="bg-white/10 hover:bg-white/20 text-white border-0 font-bold" onClick={() => window.open(selectedPreviewImage?.url, '_blank')}>
+                    <Download className="w-4 h-4 mr-2" /> Original
+                  </Button>
+               </div>
+            </div>
+         </DialogContent>
+      </Dialog>
     </MotionPage>
   );
 }

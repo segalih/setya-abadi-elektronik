@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import MotionPage from '@/components/shared/MotionWrapper';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import api from '@/services/api';
 
 declare global {
@@ -208,7 +208,7 @@ export default function OrderDetailPage() {
 
                            <div className="flex justify-between items-end">
                               <span className="text-xs font-bold text-muted-foreground uppercase">Total Tagihan</span>
-                              <span className="text-xl font-black">{order.total_price?.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</span>
+                              <span className="text-xl font-black">{formatCurrency(order.total_price || 0)}</span>
                            </div>
 
                            {order.payment_at && (

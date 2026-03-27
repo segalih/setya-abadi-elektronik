@@ -131,7 +131,7 @@ export default function DashboardPage() {
           </div>
 
           <nav className="space-y-2 flex-1">
-            <Button variant="default" className="w-full justify-start gap-3 rounded-xl h-12" onClick={() => navigate('/dashboard')}>
+            <Button variant="default" className="w-full justify-start px-4 gap-3 rounded-xl h-12" onClick={() => navigate('/dashboard')}>
               <LayoutDashboard className="w-5 h-5" />
               Dashboard
             </Button>
@@ -139,7 +139,7 @@ export default function DashboardPage() {
             <div className="pt-4 mt-4 border-t border-slate-100">
                <Button 
                  onClick={() => navigate('/order/create')}
-                 className="w-full justify-center gap-2 rounded-xl h-12 bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20"
+                 className="w-full justify-start px-4 gap-3 rounded-xl h-12 bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20"
                >
                  <Package className="w-5 h-5" />
                  Buat Pesanan Baru
@@ -163,8 +163,8 @@ export default function DashboardPage() {
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="w-full justify-center gap-2 text-red-500 hover:bg-red-50 hover:text-red-600 h-12 rounded-xl border-red-200">
-                  <LogOut className="w-4 h-4" />
+                <Button variant="outline" className="w-full justify-start px-4 gap-3 text-red-500 hover:bg-red-50 hover:text-red-600 h-12 rounded-xl border-red-200">
+                  <LogOut className="w-5 h-5" />
                   Keluar Sesi
                 </Button>
               </AlertDialogTrigger>
@@ -177,7 +177,7 @@ export default function DashboardPage() {
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-8 gap-3 sm:gap-0">
                   <AlertDialogCancel className="rounded-xl border-none bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold h-12 px-6">Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={logout} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-12 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
+                  <AlertDialogAction onClick={() => { logout(); navigate('/'); }} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-12 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter className="mt-8 gap-3 sm:gap-0">
                     <AlertDialogCancel className="rounded-xl border-none bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold h-12 px-6">Batal</AlertDialogCancel>
-                    <AlertDialogAction onClick={logout} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-12 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
+                    <AlertDialogAction onClick={() => { logout(); navigate('/'); }} className="rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold h-12 px-6 border-none shadow-lg shadow-red-500/20">Ya, Logout</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
