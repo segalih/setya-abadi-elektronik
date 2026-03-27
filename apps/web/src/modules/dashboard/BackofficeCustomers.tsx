@@ -25,21 +25,33 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import api from '@/services/api';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export default function BackofficeCustomers() {
    const navigate = useNavigate();
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-   const [page, setPage] = useState(1);
+   const [searchParams, setSearchParams] = useSearchParams();
+   const [customers, setCustomers] = useState<any[]>([]);
+   const [isLoading, setIsLoading] = useState(true);
+   
+   // Initialize state from URL
+   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+   const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
+   
    const [totalPages, setTotalPages] = useState(1);
    const [totalRecords, setTotalRecords] = useState(0);
 
    const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
    const [customerDetail, setCustomerDetail] = useState<any>(null);
    const [isDetailLoading, setIsDetailLoading] = useState(false);
+
+   // Update URL whenever page changes
+   useEffect(() => {
+     const params: any = {};
+     if (page > 1) params.page = page.toString();
+     if (searchTerm) params.search = searchTerm;
+     setSearchParams(params, { replace: true });
+   }, [page, searchTerm]); // Added searchTerm to dependency array
 
   const fetchCustomers = async () => {
     setIsLoading(true);
@@ -70,15 +82,21 @@ export default function BackofficeCustomers() {
       }
    };
 
-  useEffect(() => {
-    fetchCustomers();
-  }, [page]);
+   useEffect(() => {
+     fetchCustomers();
+   }, [page, searchParams.get('search')]);
 
-   const handleSearch = (e: React.FormEvent) => {
-      e.preventDefault();
-      setPage(1);
-      fetchCustomers();
-   };
+    const handleSearch = (e: React.FormEvent) => {
+       e.preventDefault();
+       setPage(1);
+       // Update URL specifically for search on submit
+       const params = Object.fromEntries(searchParams.entries());
+       if (searchTerm) params.search = searchTerm;
+       else delete params.search;
+       params.page = '1';
+       setSearchParams(params, { replace: true });
+       // fetchCustomers(); // fetchCustomers will be called by the useEffect due to searchParams change
+    };
 
   return (
      <div className="space-y-8 pb-10">

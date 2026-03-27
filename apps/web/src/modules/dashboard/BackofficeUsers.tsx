@@ -18,14 +18,28 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import api from '@/services/api';
 import { cn } from '@/lib/utils';
+import { useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 
 export default function BackofficeUsers() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Filters initialized from URL
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
+  
   const { addToast } = useToast();
   const currentUser = useAuthStore(state => state.user);
+
+  // Update URL whenever page changes
+  useEffect(() => {
+    const params: any = {};
+    if (page > 1) params.page = page.toString();
+    if (searchTerm) params.search = searchTerm;
+    setSearchParams(params, { replace: true });
+  }, [page, searchTerm]);
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -43,7 +57,7 @@ export default function BackofficeUsers() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, searchParams.get('search')]);
 
   const handleDelete = async (id: string, roleName: string) => {
     if (roleName === 'supervisor') {

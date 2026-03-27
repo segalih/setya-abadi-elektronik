@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Filter
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,17 +23,31 @@ import api from '@/services/api';
 import { cn } from '@/lib/utils';
 
 export default function BackofficeAudit() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Filters
-  const [searchTerm, setSearchTerm] = useState('');
-  const [actionFilter, setActionFilter] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [page, setPage] = useState(1);
+  // Filters initialized from URL
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [actionFilter, setActionFilter] = useState(searchParams.get('action') || '');
+  const [startDate, setStartDate] = useState(searchParams.get('start_date') || '');
+  const [endDate, setEndDate] = useState(searchParams.get('end_date') || '');
+  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
+  
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
+
+  // Update URL whenever page and non-search filters change
+  useEffect(() => {
+    const params: any = {};
+    if (page > 1) params.page = page.toString();
+    if (searchTerm) params.search = searchTerm;
+    if (actionFilter) params.action = actionFilter;
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    
+    setSearchParams(params, { replace: true });
+  }, [page, actionFilter, startDate, endDate]);
 
   // Modal State
   const [selectedLog, setSelectedLog] = useState<any>(null);
@@ -61,11 +76,17 @@ export default function BackofficeAudit() {
 
   useEffect(() => {
     fetchLogs();
-  }, [page]);
+  }, [page, actionFilter, startDate, endDate, searchParams.get('search')]);
 
   const handleFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
+    // Specifically update URL for search on submit
+    const params = Object.fromEntries(searchParams.entries());
+    if (searchTerm) params.search = searchTerm;
+    else delete params.search;
+    params.page = '1';
+    setSearchParams(params, { replace: true });
     fetchLogs();
   };
 
