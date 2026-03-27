@@ -17,7 +17,7 @@ import {
    Eye,
    RefreshCw
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,14 +28,29 @@ import { cn, formatCurrency } from '@/lib/utils';
 
 export default function BackofficeOrders() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-   const [paymentFilter, setPaymentFilter] = useState('all');
-  const [page, setPage] = useState(1);
+  
+  // Initialize state from URL
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
+  const [paymentFilter, setPaymentFilter] = useState(searchParams.get('payment_status') || 'all');
+  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
+  
   const [totalPages, setTotalPages] = useState(1);
-   const [totalRecords, setTotalRecords] = useState(0);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  // Update URL whenever filters change
+  useEffect(() => {
+    const params: any = {};
+    if (page > 1) params.page = page.toString();
+    if (searchTerm) params.search = searchTerm;
+    if (statusFilter !== 'all') params.status = statusFilter;
+    if (paymentFilter !== 'all') params.payment_status = paymentFilter;
+    
+    setSearchParams(params, { replace: true });
+  }, [page, statusFilter, paymentFilter]);
 
   const fetchOrders = async () => {
     setIsLoading(true);
@@ -44,8 +59,8 @@ export default function BackofficeOrders() {
         params: { 
           page, 
           search: searchTerm, 
-            status: statusFilter === 'all' ? undefined : statusFilter,
-            payment_status: paymentFilter === 'all' ? undefined : paymentFilter
+          status: statusFilter === 'all' ? undefined : statusFilter,
+          payment_status: paymentFilter === 'all' ? undefined : paymentFilter
         }
       });
       setOrders(response.data.data);
@@ -60,11 +75,17 @@ export default function BackofficeOrders() {
 
   useEffect(() => {
     fetchOrders();
-  }, [page, statusFilter, paymentFilter]);
+  }, [page, statusFilter, paymentFilter, searchParams.get('search')]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
+    // Update URL specifically for search on submit
+    const params = Object.fromEntries(searchParams.entries());
+    if (searchTerm) params.search = searchTerm;
+    else delete params.search;
+    params.page = '1';
+    setSearchParams(params, { replace: true });
     fetchOrders();
   };
 
